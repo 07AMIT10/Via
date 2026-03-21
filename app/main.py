@@ -28,6 +28,11 @@ telegram_handler = TelegramHandler(orchestrator, stt_client, settings.telegram_b
 app = FastAPI(title="Via Copilot API", version="0.1.0")
 
 
+@app.get("/")
+def read_root() -> dict[str, str]:
+    return {"message": "Via Copilot webhook server is running!"}
+
+
 @app.get("/health")
 def health() -> dict[str, str]:
     return {"status": "ok", "env": settings.app_env}
