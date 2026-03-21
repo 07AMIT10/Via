@@ -1,0 +1,13 @@
+.env
+.env.*
+!.env.example
+
+*.md
+!README.md
+
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+*.sqlite3
+*.db
