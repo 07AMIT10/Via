@@ -52,6 +52,12 @@ Week 3 scaffold started:
 - Result pane now shows action mode (`run` vs `submit`) and clearer verdict styling.
 - Added focused API auth test coverage for `/api/problem/:id` in `worker/test/api.test.ts`.
 
+Week 4 prep started:
+
+- Added `worker/src/judge0/client.ts` with language mapping and submission execution flow.
+- `/api/submit` now attempts Judge0 execution when `JUDGE0_URL` + `JUDGE0_AUTH_TOKEN` are configured.
+- If Judge0 env vars are absent, submit behavior falls back to current stub responses (safe local/dev mode).
+
 ## Local setup (Worker)
 
 1. Install dependencies:

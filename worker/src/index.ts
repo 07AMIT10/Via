@@ -11,6 +11,7 @@ import {
   recordSubmission,
 } from "./db/repo";
 import { verifyTelegramInitData } from "./api/middleware";
+import { runJudge0 } from "./judge0/client";
 
 function unauthorized(): Response {
   return new Response("unauthorized", { status: 401 });
@@ -78,10 +79,21 @@ export default {
         return new Response("bad request", { status: 400 });
       }
       const isRun = incoming.mode === "run";
-      const verdict = isRun ? "run-ok" : "accepted-stub";
-      const output = isRun
-        ? "Run complete (stub). Judge0 run mode will execute sample tests in Week 4."
-        : "Submit accepted (stub). Judge0 graded verdict arrives in Week 4.";
+      const judge = await runJudge0(env, {
+        language: incoming.language,
+        code: incoming.code,
+        wait: true,
+      });
+      const verdict = judge.verdict === "stub"
+        ? (isRun ? "run-ok" : "accepted-stub")
+        : judge.verdict;
+      const output = judge.verdict === "stub"
+        ? (
+            isRun
+              ? "Run complete (stub). Judge0 run mode will execute sample tests in Week 4."
+              : "Submit accepted (stub). Judge0 graded verdict arrives in Week 4."
+          )
+        : judge.output;
 
       await recordSubmission(env, {
         telegramId: auth.context.telegramId,
