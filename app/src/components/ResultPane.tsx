@@ -20,6 +20,23 @@ export function ResultPane({
           ? "#a40000"
           : "#444";
 
+  const verdictLabelMap: Record<string, string> = {
+    accepted: "Accepted",
+    "accepted-stub": "Accepted (Stub)",
+    "run-ok": "Run OK",
+    "wrong-answer": "Wrong Answer",
+    "time-limit-exceeded": "Time Limit Exceeded",
+    "compile-error": "Compile Error",
+    "runtime-error": "Runtime Error",
+    "internal-error": "Internal Error",
+    "exec-format-error": "Execution Format Error",
+    "judge0-auth-error": "Judge0 Auth Error",
+    "judge0-error": "Judge0 Error",
+    stub: "Stub Result",
+    error: "Error",
+  };
+  const verdictLabel = verdictLabelMap[verdict] ?? verdict;
+
   return (
     <div style={{ marginTop: 12, padding: 12, border: "1px solid #ddd", borderRadius: 8 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
@@ -27,7 +44,7 @@ export function ResultPane({
           <b>Mode:</b> {mode}
         </div>
         <div style={{ color: verdictColor }}>
-          <b>Verdict:</b> {verdict}
+          <b>Verdict:</b> {verdictLabel}
         </div>
       </div>
       <div style={{ fontSize: 13, color: "#666", marginBottom: 8 }}>

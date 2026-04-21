@@ -61,6 +61,7 @@ Week 4 prep started:
 - `/progress` now includes streak, next day pointer, and preferred language.
 - Judge0 client now maps additional status/error cases (including auth failures) for clearer user-facing output.
 - Submit API responses now include structured execution metadata (`status_id`, `judge_source`) and Mini App result UI displays these fields directly.
+- Mini App verdict rendering now maps raw backend verdict keys to human-readable labels (Accepted, WA, TLE, CE, RE, etc.).
 
 ## Local setup (Worker)
 
