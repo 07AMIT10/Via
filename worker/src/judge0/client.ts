@@ -25,6 +25,10 @@ function statusToVerdict(id: number | undefined): string {
       return "compile-error";
     case 11:
       return "runtime-error";
+    case 13:
+      return "internal-error";
+    case 14:
+      return "exec-format-error";
     default:
       return "unknown";
   }
@@ -65,6 +69,12 @@ export async function runJudge0(
   );
 
   if (!createRes.ok) {
+    if (createRes.status === 401 || createRes.status === 403) {
+      return {
+        verdict: "judge0-auth-error",
+        output: "Judge0 authentication failed. Check X-Auth-Token.",
+      };
+    }
     return {
       verdict: "judge0-error",
       output: `Judge0 submission failed with status ${createRes.status}.`,

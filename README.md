@@ -58,6 +58,8 @@ Week 4 prep started:
 - `/api/submit` now attempts Judge0 execution when `JUDGE0_URL` + `JUDGE0_AUTH_TOKEN` are configured.
 - If Judge0 env vars are absent, submit behavior falls back to current stub responses (safe local/dev mode).
 - Submission persistence now records `solved` vs `attempted` status based on verdict and increments `current_day` after accepted submit flows.
+- `/progress` now includes streak, next day pointer, and preferred language.
+- Judge0 client now maps additional status/error cases (including auth failures) for clearer user-facing output.
 
 ## Local setup (Worker)
 

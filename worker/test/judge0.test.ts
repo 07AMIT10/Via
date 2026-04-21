@@ -31,4 +31,13 @@ describe("judge0 client", () => {
     });
     expect(result.output).toContain("not configured");
   });
+
+  it("does not return accepted verdict when missing config", async () => {
+    const result = await runJudge0(envWithoutJudge0(), {
+      language: "rust",
+      code: "fn main() {}",
+      wait: true,
+    });
+    expect(result.verdict).not.toBe("accepted");
+  });
 });

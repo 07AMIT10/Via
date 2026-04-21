@@ -1,7 +1,12 @@
 import type { Env } from "../env";
 import { sendMessage } from "./send";
 import { digestKeyboard, renderDigest } from "./digest";
-import { getProblemByDay, getProgressCounts, getSubscriberByTelegramId } from "../db/repo";
+import {
+  getProblemByDay,
+  getProgressCounts,
+  getStreak,
+  getSubscriberByTelegramId,
+} from "../db/repo";
 import { sendRecapForTelegramUser } from "../cron/recap";
 
 async function upsertSubscriber(
@@ -68,10 +73,14 @@ export async function handleCommand(
     case "/progress":
       {
         const stats = await getProgressCounts(env, telegramId);
+        const sub = await getSubscriberByTelegramId(env, telegramId);
+        const streak = await getStreak(env, telegramId);
+        const nextDay = sub?.current_day ?? 1;
+        const lang = sub?.preferred_language ?? "python";
         await sendMessage(
           env,
           chatId,
-          `<b>Your progress</b>\nSolved: <b>${stats.solved}</b>\nAttempted: <b>${stats.attempted}</b>\nRead: <b>${stats.read}</b>\nSkipped: <b>${stats.skipped}</b>`,
+          `<b>Your progress</b>\nSolved: <b>${stats.solved}</b>\nAttempted: <b>${stats.attempted}</b>\nRead: <b>${stats.read}</b>\nSkipped: <b>${stats.skipped}</b>\nCurrent streak: <b>${streak}</b> day(s)\nNext day: <b>${nextDay}</b>\nPreferred language: <b>${lang}</b>`,
         );
       }
       return;

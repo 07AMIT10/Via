@@ -32,6 +32,7 @@ export interface SubscriberRow {
   telegram_id: number;
   chat_id: number;
   current_day: number;
+  preferred_language?: "python" | "go" | "rust" | null;
 }
 
 export async function getProblemByDay(
@@ -57,7 +58,7 @@ export async function getSubscriberByTelegramId(
   telegramId: number,
 ): Promise<SubscriberRow | null> {
   const result = await env.DB.prepare(
-    `SELECT telegram_id, chat_id, current_day
+    `SELECT telegram_id, chat_id, current_day, preferred_language
      FROM subscribers
      WHERE telegram_id = ?1`,
   )
@@ -100,6 +101,51 @@ export async function getProgressCounts(
     skipped: row?.skipped ?? 0,
     attempted: row?.attempted ?? 0,
   };
+}
+
+export async function getStreak(
+  env: Env,
+  telegramId: number,
+): Promise<number> {
+  const { results } = await env.DB.prepare(
+    `SELECT DISTINCT date(last_attempt, 'unixepoch') AS d
+     FROM user_progress
+     WHERE telegram_id = ?1
+       AND status = 'solved'
+     ORDER BY d DESC
+     LIMIT 60`,
+  )
+    .bind(telegramId)
+    .all<{ d: string }>();
+
+  const days = (results ?? []).map((r) => r.d);
+  if (days.length === 0) {
+    return 0;
+  }
+
+  let streak = 0;
+  let cursor = new Date();
+  for (const day of days) {
+    const expected = cursor.toISOString().slice(0, 10);
+    if (day === expected) {
+      streak += 1;
+      cursor = new Date(cursor.getTime() - 24 * 60 * 60 * 1000);
+      continue;
+    }
+    if (streak === 0) {
+      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
+        .toISOString()
+        .slice(0, 10);
+      if (day === yesterday) {
+        streak += 1;
+        cursor = new Date(cursor.getTime() - 2 * 24 * 60 * 60 * 1000);
+        continue;
+      }
+    }
+    break;
+  }
+
+  return streak;
 }
 
 export async function getProblemById(
