@@ -38,6 +38,14 @@ Latest progress:
 - `/recap` now works on demand and sends latest non-solved problem's approach + preferred-language solution.
 - Added digest helper unit tests in `worker/test/digest.test.ts`.
 
+Week 3 scaffold started:
+
+- `app/` now includes a Vite + React + TypeScript Mini App shell.
+- Monaco editor integrated (`@monaco-editor/react`) with Python/Go/Rust switch.
+- Telegram WebApp hook added (`app/src/hooks/useTelegramWebApp.ts`).
+- App fetches today's problem from Worker `/api/today` and submits to `/api/submit` (stub response for now).
+- Worker API now validates Telegram Mini App `initData` via HMAC (`Authorization: tma <initData>`) before serving `/api/today` and `/api/submit`.
+
 ## Local setup (Worker)
 
 1. Install dependencies:

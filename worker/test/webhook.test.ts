@@ -56,4 +56,11 @@ describe("worker fetch", () => {
     const res = await worker.fetch(req, env);
     expect(res.status).toBe(200);
   });
+
+  it("rejects api calls without telegram initData", async () => {
+    const env = createEnv();
+    const req = new Request("https://x/api/today");
+    const res = await worker.fetch(req, env);
+    expect(res.status).toBe(401);
+  });
 });
