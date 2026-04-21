@@ -1,5 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { fetchToday, submitCode, type ProblemPayload } from "./api";
+import {
+  fetchProblemById,
+  fetchToday,
+  submitCode,
+  type ProblemPayload,
+} from "./api";
 import { EditorPane } from "./components/EditorPane";
 import { LangSwitch } from "./components/LangSwitch";
 import { ProblemPane } from "./components/ProblemPane";
@@ -24,7 +29,11 @@ export function App() {
 
   useEffect(() => {
     void (async () => {
-      const data = await fetchToday(initData);
+      const params = new URLSearchParams(window.location.search);
+      const explicitProblem = Number(params.get("problem"));
+      const data = Number.isNaN(explicitProblem)
+        ? await fetchToday(initData)
+        : await fetchProblemById(initData, explicitProblem);
       setProblem(data);
     })();
   }, [initData]);
@@ -35,15 +44,16 @@ export function App() {
 
   const canSubmit = useMemo(() => Boolean(problem), [problem]);
 
-  async function onSubmit() {
+  async function onAction(mode: "run" | "submit") {
     if (!problem) {
       return;
     }
-    setVerdict("running");
+    setVerdict(mode === "run" ? "running" : "submitting");
     const result = await submitCode(initData, {
       problemId: problem.id,
       language,
       code,
+      mode,
     });
     setVerdict(result.verdict);
     setOutput(result.output);
@@ -70,20 +80,36 @@ export function App() {
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
             <LangSwitch value={language} onChange={setLanguage} />
-            <button
-              onClick={onSubmit}
-              disabled={!canSubmit}
-              style={{
-                border: "1px solid #111",
-                borderRadius: 8,
-                padding: "8px 12px",
-                background: canSubmit ? "#111" : "#777",
-                color: "#fff",
-                cursor: canSubmit ? "pointer" : "not-allowed",
-              }}
-            >
-              Submit
-            </button>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button
+                onClick={() => onAction("run")}
+                disabled={!canSubmit}
+                style={{
+                  border: "1px solid #444",
+                  borderRadius: 8,
+                  padding: "8px 12px",
+                  background: canSubmit ? "#fff" : "#777",
+                  color: "#111",
+                  cursor: canSubmit ? "pointer" : "not-allowed",
+                }}
+              >
+                Run
+              </button>
+              <button
+                onClick={() => onAction("submit")}
+                disabled={!canSubmit}
+                style={{
+                  border: "1px solid #111",
+                  borderRadius: 8,
+                  padding: "8px 12px",
+                  background: canSubmit ? "#111" : "#777",
+                  color: "#fff",
+                  cursor: canSubmit ? "pointer" : "not-allowed",
+                }}
+              >
+                Submit
+              </button>
+            </div>
           </div>
           <EditorPane language={language} code={code} onChange={setCode} />
           <ResultPane verdict={verdict} output={output} />

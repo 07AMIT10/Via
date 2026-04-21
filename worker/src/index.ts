@@ -4,7 +4,12 @@ import { processTelegramUpdate } from "./telegram/webhook";
 import { runRecapCron } from "./cron/recap";
 import { runDailyBroadcastCron } from "./cron/daily-broadcast";
 import { handleBroadcastQueue } from "./queue/broadcast-consumer";
-import { getProblemByDay, getSubscriberByTelegramId } from "./db/repo";
+import {
+  getProblemByDay,
+  getProblemById,
+  getSubscriberByTelegramId,
+  recordSubmission,
+} from "./db/repo";
 import { verifyTelegramInitData } from "./api/middleware";
 
 function unauthorized(): Response {
@@ -34,6 +39,22 @@ export default {
       return Response.json(problem);
     }
 
+    if (url.pathname.startsWith("/api/problem/") && request.method === "GET") {
+      const auth = await verifyTelegramInitData(env, request);
+      if (!auth.ok) {
+        return auth.response;
+      }
+      const id = Number(url.pathname.replace("/api/problem/", ""));
+      if (Number.isNaN(id)) {
+        return new Response("bad request", { status: 400 });
+      }
+      const problem = await getProblemById(env, id);
+      if (!problem) {
+        return new Response("not found", { status: 404 });
+      }
+      return Response.json(problem);
+    }
+
     if (url.pathname === "/api/submit" && request.method === "POST") {
       const auth = await verifyTelegramInitData(env, request);
       if (!auth.ok) {
@@ -43,11 +64,35 @@ export default {
       if (!body || typeof body !== "object") {
         return new Response("bad request", { status: 400 });
       }
-      return Response.json({
-        verdict: "queued",
-        output: "Submission accepted. Judge0 integration lands in Week 4.",
-        telegram_id: auth.context.telegramId,
+      const incoming = body as {
+        problemId?: number;
+        language?: "python" | "go" | "rust";
+        code?: string;
+        mode?: "run" | "submit";
+      };
+      if (
+        typeof incoming.problemId !== "number" ||
+        !incoming.language ||
+        !incoming.code
+      ) {
+        return new Response("bad request", { status: 400 });
+      }
+      const isRun = incoming.mode === "run";
+      const verdict = isRun ? "run-ok" : "accepted-stub";
+      const output = isRun
+        ? "Run complete (stub). Judge0 run mode will execute sample tests in Week 4."
+        : "Submit accepted (stub). Judge0 graded verdict arrives in Week 4.";
+
+      await recordSubmission(env, {
+        telegramId: auth.context.telegramId,
+        problemId: incoming.problemId,
+        language: incoming.language,
+        code: incoming.code,
+        output,
+        verdict,
       });
+
+      return Response.json({ verdict, output, telegram_id: auth.context.telegramId });
     }
 
     if (url.pathname === "/telegram/webhook" && request.method === "POST") {

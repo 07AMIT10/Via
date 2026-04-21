@@ -45,6 +45,9 @@ Week 3 scaffold started:
 - Telegram WebApp hook added (`app/src/hooks/useTelegramWebApp.ts`).
 - App fetches today's problem from Worker `/api/today` and submits to `/api/submit` (stub response for now).
 - Worker API now validates Telegram Mini App `initData` via HMAC (`Authorization: tma <initData>`) before serving `/api/today` and `/api/submit`.
+- Added deep-link endpoint `GET /api/problem/:id` so Telegram buttons can open specific problems.
+- Mini App now supports separate `Run` and `Submit` actions and passes mode to backend.
+- `/api/submit` now persists submission metadata into `user_progress` and `submissions_log` (still stub verdicts until Week 4 Judge0 wiring).
 
 ## Local setup (Worker)
 

@@ -17,6 +17,15 @@ export interface ProblemRow {
   canonical_solutions_json: string | null;
 }
 
+export interface SubmitPayload {
+  telegramId: number;
+  problemId: number;
+  language: "python" | "go" | "rust";
+  code: string;
+  output: string;
+  verdict: string;
+}
+
 export interface SubscriberRow {
   telegram_id: number;
   chat_id: number;
@@ -120,4 +129,42 @@ export async function getPreferredLanguage(
     .first<{ preferred_language: "python" | "go" | "rust" | null }>();
 
   return row?.preferred_language ?? "python";
+}
+
+export async function recordSubmission(
+  env: Env,
+  payload: SubmitPayload,
+): Promise<void> {
+  await env.DB.prepare(
+    `INSERT INTO user_progress (
+      telegram_id, problem_id, status, language, last_code, last_stdout, attempts, last_attempt
+     ) VALUES (
+      ?1, ?2, 'attempted', ?3, ?4, ?5, 1, unixepoch()
+     )
+     ON CONFLICT(telegram_id, problem_id) DO UPDATE SET
+      status = CASE
+        WHEN excluded.status = 'attempted' AND user_progress.status = 'solved' THEN 'solved'
+        ELSE excluded.status
+      END,
+      language = excluded.language,
+      last_code = excluded.last_code,
+      last_stdout = excluded.last_stdout,
+      attempts = user_progress.attempts + 1,
+      last_attempt = unixepoch()`,
+  )
+    .bind(
+      payload.telegramId,
+      payload.problemId,
+      payload.language,
+      payload.code,
+      payload.output,
+    )
+    .run();
+
+  await env.DB.prepare(
+    `INSERT INTO submissions_log (telegram_id, problem_id, language, verdict, created_at)
+     VALUES (?1, ?2, ?3, ?4, unixepoch())`,
+  )
+    .bind(payload.telegramId, payload.problemId, payload.language, payload.verdict)
+    .run();
 }

@@ -27,9 +27,29 @@ export async function fetchToday(initData: string): Promise<ProblemPayload | nul
   return res.json() as Promise<ProblemPayload>;
 }
 
+export async function fetchProblemById(
+  initData: string,
+  problemId: number,
+): Promise<ProblemPayload | null> {
+  const res = await fetch(`${WORKER_BASE}/api/problem/${problemId}`, {
+    headers: {
+      Authorization: `tma ${initData}`,
+    },
+  });
+  if (!res.ok) {
+    return null;
+  }
+  return res.json() as Promise<ProblemPayload>;
+}
+
 export async function submitCode(
   initData: string,
-  payload: { problemId: number; language: "python" | "go" | "rust"; code: string },
+  payload: {
+    problemId: number;
+    language: "python" | "go" | "rust";
+    code: string;
+    mode: "run" | "submit";
+  },
 ): Promise<{ verdict: string; output: string }> {
   const res = await fetch(`${WORKER_BASE}/api/submit`, {
     method: "POST",
