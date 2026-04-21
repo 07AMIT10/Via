@@ -1,0 +1,21 @@
+{
+  "name": "dsa-bot-worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.5.42",
+    "@cloudflare/workers-types": "^4.20260405.0",
+    "typescript": "^5.8.3",
+    "vitest": "^2.1.8",
+    "wrangler": "^4.11.1"
+  }
+}
