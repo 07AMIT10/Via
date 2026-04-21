@@ -48,6 +48,9 @@ Week 3 scaffold started:
 - Added deep-link endpoint `GET /api/problem/:id` so Telegram buttons can open specific problems.
 - Mini App now supports separate `Run` and `Submit` actions and passes mode to backend.
 - `/api/submit` now persists submission metadata into `user_progress` and `submissions_log` (still stub verdicts until Week 4 Judge0 wiring).
+- Mini App layout now collapses to a single-column flow on mobile widths for better Telegram in-app browsing.
+- Result pane now shows action mode (`run` vs `submit`) and clearer verdict styling.
+- Added focused API auth test coverage for `/api/problem/:id` in `worker/test/api.test.ts`.
 
 ## Local setup (Worker)
 

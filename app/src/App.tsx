@@ -26,6 +26,10 @@ export function App() {
   const [code, setCode] = useState<string>(STARTERS.python);
   const [verdict, setVerdict] = useState("idle");
   const [output, setOutput] = useState("Submit to see results.");
+  const [lastMode, setLastMode] = useState<"run" | "submit">("submit");
+  const [isMobile, setIsMobile] = useState<boolean>(
+    window.matchMedia("(max-width: 900px)").matches,
+  );
 
   useEffect(() => {
     void (async () => {
@@ -42,6 +46,13 @@ export function App() {
     setCode(STARTERS[language]);
   }, [language]);
 
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 900px)");
+    const onChange = (ev: MediaQueryListEvent) => setIsMobile(ev.matches);
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
+  }, []);
+
   const canSubmit = useMemo(() => Boolean(problem), [problem]);
 
   async function onAction(mode: "run" | "submit") {
@@ -55,6 +66,7 @@ export function App() {
       code,
       mode,
     });
+    setLastMode(mode);
     setVerdict(result.verdict);
     setOutput(result.output);
   }
@@ -71,7 +83,9 @@ export function App() {
         style={{
           display: "grid",
           gap: 12,
-          gridTemplateColumns: "minmax(280px, 42%) minmax(320px, 58%)",
+          gridTemplateColumns: isMobile
+            ? "1fr"
+            : "minmax(280px, 42%) minmax(320px, 58%)",
         }}
       >
         <div style={{ border: "1px solid #ddd", borderRadius: 8 }}>
@@ -112,7 +126,7 @@ export function App() {
             </div>
           </div>
           <EditorPane language={language} code={code} onChange={setCode} />
-          <ResultPane verdict={verdict} output={output} />
+          <ResultPane verdict={verdict} output={output} mode={lastMode} />
         </div>
       </div>
     </div>
