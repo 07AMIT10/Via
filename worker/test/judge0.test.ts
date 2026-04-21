@@ -22,4 +22,13 @@ describe("judge0 client", () => {
     });
     expect(result.verdict).toBe("stub");
   });
+
+  it("preserves output text in stub fallback", async () => {
+    const result = await runJudge0(envWithoutJudge0(), {
+      language: "go",
+      code: "package main",
+      wait: true,
+    });
+    expect(result.output).toContain("not configured");
+  });
 });

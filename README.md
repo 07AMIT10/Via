@@ -57,6 +57,7 @@ Week 4 prep started:
 - Added `worker/src/judge0/client.ts` with language mapping and submission execution flow.
 - `/api/submit` now attempts Judge0 execution when `JUDGE0_URL` + `JUDGE0_AUTH_TOKEN` are configured.
 - If Judge0 env vars are absent, submit behavior falls back to current stub responses (safe local/dev mode).
+- Submission persistence now records `solved` vs `attempted` status based on verdict and increments `current_day` after accepted submit flows.
 
 ## Local setup (Worker)
 

@@ -24,6 +24,8 @@ export interface SubmitPayload {
   code: string;
   output: string;
   verdict: string;
+  status: "attempted" | "solved";
+  advanceDay: boolean;
 }
 
 export interface SubscriberRow {
@@ -139,7 +141,7 @@ export async function recordSubmission(
     `INSERT INTO user_progress (
       telegram_id, problem_id, status, language, last_code, last_stdout, attempts, last_attempt
      ) VALUES (
-      ?1, ?2, 'attempted', ?3, ?4, ?5, 1, unixepoch()
+      ?1, ?2, ?3, ?4, ?5, ?6, 1, unixepoch()
      )
      ON CONFLICT(telegram_id, problem_id) DO UPDATE SET
       status = CASE
@@ -155,6 +157,7 @@ export async function recordSubmission(
     .bind(
       payload.telegramId,
       payload.problemId,
+      payload.status,
       payload.language,
       payload.code,
       payload.output,
@@ -167,4 +170,20 @@ export async function recordSubmission(
   )
     .bind(payload.telegramId, payload.problemId, payload.language, payload.verdict)
     .run();
+
+  if (payload.advanceDay) {
+    await env.DB.prepare(
+      `UPDATE subscribers
+       SET current_day = current_day + 1
+       WHERE telegram_id = ?1
+         AND current_day = (
+           SELECT day_number
+           FROM problems
+           WHERE id = ?2
+           LIMIT 1
+         )`,
+    )
+      .bind(payload.telegramId, payload.problemId)
+      .run();
+  }
 }

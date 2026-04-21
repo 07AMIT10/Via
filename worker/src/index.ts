@@ -95,6 +95,10 @@ export default {
           )
         : judge.output;
 
+      const solved =
+        verdict === "accepted" ||
+        verdict === "accepted-stub";
+
       await recordSubmission(env, {
         telegramId: auth.context.telegramId,
         problemId: incoming.problemId,
@@ -102,6 +106,8 @@ export default {
         code: incoming.code,
         output,
         verdict,
+        status: solved ? "solved" : "attempted",
+        advanceDay: !isRun && solved,
       });
 
       return Response.json({ verdict, output, telegram_id: auth.context.telegramId });
