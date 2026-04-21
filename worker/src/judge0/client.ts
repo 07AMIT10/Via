@@ -42,11 +42,13 @@ export async function runJudge0(
     stdin?: string;
     wait?: boolean;
   },
-): Promise<{ verdict: string; output: string }> {
+): Promise<{ verdict: string; output: string; status_id: number | null; judge_source: "judge0" | "stub" }> {
   if (!env.JUDGE0_URL || !env.JUDGE0_AUTH_TOKEN) {
     return {
       verdict: "stub",
       output: "Judge0 is not configured in this environment.",
+      status_id: null,
+      judge_source: "stub",
     };
   }
 
@@ -73,11 +75,15 @@ export async function runJudge0(
       return {
         verdict: "judge0-auth-error",
         output: "Judge0 authentication failed. Check X-Auth-Token.",
+        status_id: null,
+        judge_source: "judge0",
       };
     }
     return {
       verdict: "judge0-error",
       output: `Judge0 submission failed with status ${createRes.status}.`,
+      status_id: null,
+      judge_source: "judge0",
     };
   }
 
@@ -112,5 +118,10 @@ export async function runJudge0(
     result.status?.description ??
     "No output";
 
-  return { verdict, output };
+  return {
+    verdict,
+    output,
+    status_id: result.status?.id ?? null,
+    judge_source: "judge0",
+  };
 }

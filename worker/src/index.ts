@@ -110,7 +110,13 @@ export default {
         advanceDay: !isRun && solved,
       });
 
-      return Response.json({ verdict, output, telegram_id: auth.context.telegramId });
+      return Response.json({
+        verdict,
+        output,
+        telegram_id: auth.context.telegramId,
+        status_id: judge.status_id,
+        judge_source: judge.judge_source,
+      });
     }
 
     if (url.pathname === "/telegram/webhook" && request.method === "POST") {

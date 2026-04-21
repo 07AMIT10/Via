@@ -60,6 +60,7 @@ Week 4 prep started:
 - Submission persistence now records `solved` vs `attempted` status based on verdict and increments `current_day` after accepted submit flows.
 - `/progress` now includes streak, next day pointer, and preferred language.
 - Judge0 client now maps additional status/error cases (including auth failures) for clearer user-facing output.
+- Submit API responses now include structured execution metadata (`status_id`, `judge_source`) and Mini App result UI displays these fields directly.
 
 ## Local setup (Worker)
 

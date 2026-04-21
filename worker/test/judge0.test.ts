@@ -21,6 +21,8 @@ describe("judge0 client", () => {
       wait: true,
     });
     expect(result.verdict).toBe("stub");
+    expect(result.judge_source).toBe("stub");
+    expect(result.status_id).toBeNull();
   });
 
   it("preserves output text in stub fallback", async () => {

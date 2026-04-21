@@ -50,7 +50,12 @@ export async function submitCode(
     code: string;
     mode: "run" | "submit";
   },
-): Promise<{ verdict: string; output: string }> {
+): Promise<{
+  verdict: string;
+  output: string;
+  status_id: number | null;
+  judge_source: "judge0" | "stub";
+}> {
   const res = await fetch(`${WORKER_BASE}/api/submit`, {
     method: "POST",
     headers: {
@@ -60,7 +65,12 @@ export async function submitCode(
     body: JSON.stringify(payload),
   });
   if (!res.ok) {
-    return { verdict: "error", output: "Submission failed." };
+    return { verdict: "error", output: "Submission failed.", status_id: null, judge_source: "stub" };
   }
-  return res.json() as Promise<{ verdict: string; output: string }>;
+  return res.json() as Promise<{
+    verdict: string;
+    output: string;
+    status_id: number | null;
+    judge_source: "judge0" | "stub";
+  }>;
 }

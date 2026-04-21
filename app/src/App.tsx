@@ -27,6 +27,8 @@ export function App() {
   const [verdict, setVerdict] = useState("idle");
   const [output, setOutput] = useState("Submit to see results.");
   const [lastMode, setLastMode] = useState<"run" | "submit">("submit");
+  const [statusId, setStatusId] = useState<number | null>(null);
+  const [judgeSource, setJudgeSource] = useState<"judge0" | "stub">("stub");
   const [isMobile, setIsMobile] = useState<boolean>(
     window.matchMedia("(max-width: 900px)").matches,
   );
@@ -69,6 +71,8 @@ export function App() {
     setLastMode(mode);
     setVerdict(result.verdict);
     setOutput(result.output);
+    setStatusId(result.status_id);
+    setJudgeSource(result.judge_source);
   }
 
   return (
@@ -126,7 +130,13 @@ export function App() {
             </div>
           </div>
           <EditorPane language={language} code={code} onChange={setCode} />
-          <ResultPane verdict={verdict} output={output} mode={lastMode} />
+          <ResultPane
+            verdict={verdict}
+            output={output}
+            mode={lastMode}
+            statusId={statusId}
+            judgeSource={judgeSource}
+          />
         </div>
       </div>
     </div>
