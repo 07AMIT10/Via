@@ -17,6 +17,27 @@ Implemented:
 - Initial D1 schema in `worker/src/db/schema.sql`
 - Basic tests in `worker/test/webhook.test.ts`
 
+In progress (Week 2 scaffolding):
+
+- Ingest pipeline skeleton in `ingest/src/` (`classics`, `validate`, `emit-sql`, `index`)
+- Starter curriculum in `content/problems/curriculum.json`
+- Telegram digest builder in `worker/src/telegram/digest.ts`
+- Callback scaffolding in `worker/src/telegram/callbacks.ts`
+- Recap cron scaffolding in `worker/src/cron/recap.ts`
+
+Latest progress:
+
+- `/today` pulls real problem rows from D1 and sends digest + action keyboard.
+- Daily cron enqueues subscriber deliveries; queue consumer sends digest messages.
+- Callback actions now handle hint reveal, mark read/attempted/skip, approach reveal, and gated solution reveal.
+- `/progress` is live and `/lang <python|go|rust>` sets recap solution language.
+- Recap cron now sends actual canonical approach + preferred-language reference solution.
+- Ingest now supports optional Groq enrichment via `GROQ_API_KEY`.
+- First 12 classic problems now contain concrete titles/descriptions/examples/hints/complexity metadata (no placeholder examples).
+- Ingest validation now enforces minimum quality (hints/examples/apps/variations + per-language solutions/tests presence).
+- `/recap` now works on demand and sends latest non-solved problem's approach + preferred-language solution.
+- Added digest helper unit tests in `worker/test/digest.test.ts`.
+
 ## Local setup (Worker)
 
 1. Install dependencies:

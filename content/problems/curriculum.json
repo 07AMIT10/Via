@@ -1,0 +1,14 @@
+[
+  { "day": 1, "topic": "arrays", "pattern": "hashing", "difficulty": "easy", "source": "classic:two-sum" },
+  { "day": 2, "topic": "arrays", "pattern": "two-pointers", "difficulty": "easy", "source": "classic:valid-palindrome" },
+  { "day": 3, "topic": "arrays", "pattern": "prefix-sum", "difficulty": "easy", "source": "classic:running-sum" },
+  { "day": 4, "topic": "strings", "pattern": "sliding-window", "difficulty": "medium", "source": "classic:longest-unique-substring" },
+  { "day": 5, "topic": "strings", "pattern": "hashing", "difficulty": "easy", "source": "classic:valid-anagram" },
+  { "day": 6, "topic": "stacks", "pattern": "stack", "difficulty": "easy", "source": "classic:valid-parentheses" },
+  { "day": 7, "topic": "binary-search", "pattern": "binary-search", "difficulty": "easy", "source": "classic:binary-search" },
+  { "day": 8, "topic": "linked-list", "pattern": "two-pointers", "difficulty": "easy", "source": "classic:reverse-linked-list" },
+  { "day": 9, "topic": "trees", "pattern": "dfs", "difficulty": "easy", "source": "classic:max-depth-binary-tree" },
+  { "day": 10, "topic": "heaps", "pattern": "heap", "difficulty": "medium", "source": "classic:kth-largest-element" },
+  { "day": 11, "topic": "graphs", "pattern": "bfs", "difficulty": "medium", "source": "classic:number-of-islands" },
+  { "day": 12, "topic": "dp", "pattern": "1d-dp", "difficulty": "easy", "source": "classic:climbing-stairs" }
+]

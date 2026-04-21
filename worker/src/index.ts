@@ -1,5 +1,9 @@
+import type { ScheduledController } from "@cloudflare/workers-types";
 import type { Env } from "./env";
 import { processTelegramUpdate } from "./telegram/webhook";
+import { runRecapCron } from "./cron/recap";
+import { runDailyBroadcastCron } from "./cron/daily-broadcast";
+import { handleBroadcastQueue } from "./queue/broadcast-consumer";
 
 function unauthorized(): Response {
   return new Response("unauthorized", { status: 401 });
@@ -25,11 +29,18 @@ export default {
     return new Response("not found", { status: 404 });
   },
 
-  async scheduled(): Promise<void> {
-    return;
+  async scheduled(controller: ScheduledController, env: Env): Promise<void> {
+    const cron = controller.cron;
+    if (cron === "0 13 * * *") {
+      await runDailyBroadcastCron(env);
+      return;
+    }
+    if (cron === "30 13 * * *") {
+      await runRecapCron(env);
+    }
   },
 
-  async queue(): Promise<void> {
-    return;
+  async queue(batch, env): Promise<void> {
+    await handleBroadcastQueue(env, batch);
   },
 };

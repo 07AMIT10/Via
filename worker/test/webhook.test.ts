@@ -36,4 +36,24 @@ describe("worker fetch", () => {
     const res = await worker.fetch(req, env);
     expect(res.status).toBe(401);
   });
+
+  it("accepts authorized command webhook", async () => {
+    const env = createEnv();
+    const req = new Request("https://x/telegram/webhook", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        "x-telegram-bot-api-secret-token": "secret",
+      },
+      body: JSON.stringify({
+        message: {
+          text: "/start",
+          chat: { id: 1 },
+          from: { id: 10, username: "u" },
+        },
+      }),
+    });
+    const res = await worker.fetch(req, env);
+    expect(res.status).toBe(200);
+  });
 });
