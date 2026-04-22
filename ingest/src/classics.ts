@@ -118,7 +118,15 @@ export function classicProblemFromCurriculum(
     difficulty: row.difficulty,
     pattern: row.pattern,
     topic: row.topic,
-    examples_json: JSON.stringify(content?.examples ?? []),
+    examples_json: JSON.stringify(
+      content?.examples ?? [
+        {
+          input: "sample input",
+          output: "sample output",
+          explanation: "Replace with concrete sample when available.",
+        },
+      ],
+    ),
     key_insight: "Identify the invariant and preserve it as you scan the input.",
     applications_json: JSON.stringify([
       "Interview-style coding rounds",

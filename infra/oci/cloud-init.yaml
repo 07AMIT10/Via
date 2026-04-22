@@ -1,0 +1,39 @@
+#cloud-config
+package_update: true
+package_upgrade: true
+
+packages:
+  - docker.io
+  - docker-compose-plugin
+  - curl
+  - ufw
+  - caddy
+
+write_files:
+  - path: /etc/sysctl.d/99-dsa-bot.conf
+    owner: root:root
+    permissions: "0644"
+    content: |
+      vm.max_map_count=262144
+
+  - path: /opt/dsa-bot/judge0/.env
+    owner: root:root
+    permissions: "0600"
+    content: |
+      JUDGE0_TOKEN=replace_me
+      POSTGRES_PASSWORD=replace_me
+      REDIS_PASSWORD=replace_me
+
+runcmd:
+  - mkdir -p /opt/dsa-bot/judge0
+  - systemctl enable docker
+  - systemctl start docker
+  - ufw default deny incoming
+  - ufw default allow outgoing
+  - ufw allow 22/tcp
+  - ufw allow 80/tcp
+  - ufw allow 443/tcp
+  - ufw --force enable
+  - sysctl --system
+
+final_message: "OCI VM bootstrap complete. Deploy Judge0 files into /opt/dsa-bot/judge0 and run docker compose up -d."

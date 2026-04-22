@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { classicProblemFromCurriculum } from "./classics";
 import { emitSeedSql } from "./emit-sql";
 import { enrichProblem } from "./enrich";
+import { exercismProblemFromCurriculum } from "./exercism";
 import type { CurriculumRow } from "./types";
 import { validateProblem } from "./validate";
 
@@ -15,8 +16,15 @@ async function main(): Promise<void> {
 
   const records = [];
   for (const row of rows) {
-    const base = validateProblem(classicProblemFromCurriculum(row));
-    const enriched = validateProblem(await enrichProblem(base));
+    let base = null;
+    if (row.source.startsWith("exercism:")) {
+      base = await exercismProblemFromCurriculum(row, process.cwd());
+    }
+    if (!base) {
+      base = classicProblemFromCurriculum(row);
+    }
+    const validated = validateProblem(base);
+    const enriched = validateProblem(await enrichProblem(validated));
     records.push(enriched);
   }
   const sql = emitSeedSql(records);

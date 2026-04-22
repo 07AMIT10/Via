@@ -4,14 +4,8 @@ import { processTelegramUpdate } from "./telegram/webhook";
 import { runRecapCron } from "./cron/recap";
 import { runDailyBroadcastCron } from "./cron/daily-broadcast";
 import { handleBroadcastQueue } from "./queue/broadcast-consumer";
-import {
-  getProblemByDay,
-  getProblemById,
-  getSubscriberByTelegramId,
-  recordSubmission,
-} from "./db/repo";
-import { verifyTelegramInitData } from "./api/middleware";
-import { runJudge0 } from "./judge0/client";
+import { handleProblemById, handleTodayProblem } from "./api/problem";
+import { handleSubmit } from "./api/submit";
 
 function unauthorized(): Response {
   return new Response("unauthorized", { status: 401 });
@@ -26,97 +20,15 @@ export default {
     }
 
     if (url.pathname === "/api/today" && request.method === "GET") {
-      const auth = await verifyTelegramInitData(env, request);
-      if (!auth.ok) {
-        return auth.response;
-      }
-      const telegramId = auth.context.telegramId;
-      const sub = await getSubscriberByTelegramId(env, telegramId);
-      const day = sub?.current_day ?? 1;
-      const problem = await getProblemByDay(env, day);
-      if (!problem) {
-        return new Response("not found", { status: 404 });
-      }
-      return Response.json(problem);
+      return handleTodayProblem(request, env);
     }
 
     if (url.pathname.startsWith("/api/problem/") && request.method === "GET") {
-      const auth = await verifyTelegramInitData(env, request);
-      if (!auth.ok) {
-        return auth.response;
-      }
-      const id = Number(url.pathname.replace("/api/problem/", ""));
-      if (Number.isNaN(id)) {
-        return new Response("bad request", { status: 400 });
-      }
-      const problem = await getProblemById(env, id);
-      if (!problem) {
-        return new Response("not found", { status: 404 });
-      }
-      return Response.json(problem);
+      return handleProblemById(request, env, url.pathname);
     }
 
     if (url.pathname === "/api/submit" && request.method === "POST") {
-      const auth = await verifyTelegramInitData(env, request);
-      if (!auth.ok) {
-        return auth.response;
-      }
-      const body = await request.json().catch(() => null);
-      if (!body || typeof body !== "object") {
-        return new Response("bad request", { status: 400 });
-      }
-      const incoming = body as {
-        problemId?: number;
-        language?: "python" | "go" | "rust";
-        code?: string;
-        mode?: "run" | "submit";
-      };
-      if (
-        typeof incoming.problemId !== "number" ||
-        !incoming.language ||
-        !incoming.code
-      ) {
-        return new Response("bad request", { status: 400 });
-      }
-      const isRun = incoming.mode === "run";
-      const judge = await runJudge0(env, {
-        language: incoming.language,
-        code: incoming.code,
-        wait: true,
-      });
-      const verdict = judge.verdict === "stub"
-        ? (isRun ? "run-ok" : "accepted-stub")
-        : judge.verdict;
-      const output = judge.verdict === "stub"
-        ? (
-            isRun
-              ? "Run complete (stub). Judge0 run mode will execute sample tests in Week 4."
-              : "Submit accepted (stub). Judge0 graded verdict arrives in Week 4."
-          )
-        : judge.output;
-
-      const solved =
-        verdict === "accepted" ||
-        verdict === "accepted-stub";
-
-      await recordSubmission(env, {
-        telegramId: auth.context.telegramId,
-        problemId: incoming.problemId,
-        language: incoming.language,
-        code: incoming.code,
-        output,
-        verdict,
-        status: solved ? "solved" : "attempted",
-        advanceDay: !isRun && solved,
-      });
-
-      return Response.json({
-        verdict,
-        output,
-        telegram_id: auth.context.telegramId,
-        status_id: judge.status_id,
-        judge_source: judge.judge_source,
-      });
+      return handleSubmit(request, env);
     }
 
     if (url.pathname === "/telegram/webhook" && request.method === "POST") {
