@@ -1,5 +1,5 @@
 [
-  { "day": 1, "topic": "arrays", "pattern": "hashing", "difficulty": "easy", "source": "classic:two-sum" },
+  { "day": 1, "slug": "contains-duplicate", "topic": "arrays", "pattern": "hashing", "difficulty": "easy" },
   { "day": 2, "topic": "arrays", "pattern": "two-pointers", "difficulty": "easy", "source": "classic:valid-palindrome" },
   { "day": 3, "topic": "arrays", "pattern": "prefix-sum", "difficulty": "easy", "source": "classic:running-sum" },
   { "day": 4, "topic": "strings", "pattern": "sliding-window", "difficulty": "medium", "source": "classic:longest-unique-substring" },
