@@ -5,11 +5,11 @@ compatibility_date = "2026-04-21"
 [[d1_databases]]
 binding = "DB"
 database_name = "dsa-bot"
-database_id = "REPLACE_WITH_D1_DATABASE_ID"
+database_id = "0e319c27-fb22-4497-9bc1-818c5f1a4fe6"
 
 [[kv_namespaces]]
 binding = "CACHE"
-id = "REPLACE_WITH_KV_NAMESPACE_ID"
+id = "7e4f2ad9684843f39324d9b21698911c"
 
 [[queues.producers]]
 queue = "broadcast"

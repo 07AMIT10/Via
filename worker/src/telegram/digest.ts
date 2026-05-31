@@ -46,22 +46,3 @@ ${vars}
 <code>${esc(model.complexity)}</code>`;
 }
 
-export function digestKeyboard(problemId: number, pagesUrl: string): Record<string, unknown> {
-  return {
-    inline_keyboard: [
-      [{ text: "Solve now", web_app: { url: `${pagesUrl}?problem=${problemId}` } }],
-      [
-        { text: "Hint 1", callback_data: `h:${problemId}:1` },
-        { text: "Mark read", callback_data: `r:${problemId}` },
-      ],
-      [
-        { text: "Show approach", callback_data: `a:${problemId}` },
-        { text: "Skip today", callback_data: `k:${problemId}` },
-      ],
-      [
-        { text: "Mark attempted", callback_data: `m:${problemId}` },
-        { text: "Show solution", callback_data: `s:${problemId}` },
-      ],
-    ],
-  };
-}
