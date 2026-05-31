@@ -4,10 +4,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "npm run build --prefix ../content/schema && tsc -p tsconfig.json",
+    "content:validate": "npm run build && node dist/content-validate.js",
     "ingest": "node dist/index.js"
   },
   "dependencies": {
+    "dsa-bot-content-schema": "file:../content/schema",
     "zod": "^3.23.8"
   },
   "devDependencies": {
