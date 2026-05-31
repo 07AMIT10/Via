@@ -1,6 +1,12 @@
 import type { Env } from "../env";
-import { getProblemByDay, getProblemById, getSubscriberByTelegramId } from "../db/repo";
+import {
+  getPreferredLanguage,
+  getProblemByDay,
+  getProblemById,
+  getSubscriberByTelegramId,
+} from "../db/repo";
 import { verifyTelegramInitData } from "./middleware";
+import { serializeProblemApi } from "./problem-payload.js";
 
 export async function handleTodayProblem(
   request: Request,
@@ -17,7 +23,8 @@ export async function handleTodayProblem(
   if (!problem) {
     return new Response("not found", { status: 404 });
   }
-  return Response.json(problem);
+  const lang = await getPreferredLanguage(env, telegramId);
+  return Response.json(serializeProblemApi(problem, lang));
 }
 
 export async function handleProblemById(
@@ -29,6 +36,7 @@ export async function handleProblemById(
   if (!auth.ok) {
     return auth.response;
   }
+  const telegramId = auth.context.telegramId;
   const id = Number(path.replace("/api/problem/", ""));
   if (Number.isNaN(id)) {
     return new Response("bad request", { status: 400 });
@@ -37,5 +45,6 @@ export async function handleProblemById(
   if (!problem) {
     return new Response("not found", { status: 404 });
   }
-  return Response.json(problem);
+  const lang = await getPreferredLanguage(env, telegramId);
+  return Response.json(serializeProblemApi(problem, lang));
 }

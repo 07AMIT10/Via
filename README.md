@@ -63,6 +63,25 @@ Week 4 prep started:
 - Submit API responses now include structured execution metadata (`status_id`, `judge_source`) and Mini App result UI displays these fields directly.
 - Mini App verdict rendering now maps raw backend verdict keys to human-readable labels (Accepted, WA, TLE, CE, RE, etc.).
 
+## JSON content authoring
+
+Problems live as versioned JSON under `content/problems/<slug>.json`. The Zod schema is in `content/schema/`.
+
+1. Add or edit a problem JSON file.
+2. Validate and emit seed SQL:
+   ```bash
+   cd ingest && npm install && npm run build && node dist/index.js
+   ```
+3. Apply D1 migration (once per environment) and seed:
+   ```bash
+   cd worker
+   npx wrangler d1 execute dsa-bot --remote --file=migrations/0002_content_json.sql
+   npx wrangler d1 execute dsa-bot --remote --file=../ingest/seed.sql
+   ```
+4. Deploy the worker: `npm run deploy`
+
+Legacy ingest (classics / Exercism / Groq) remains available with `INGEST_LEGACY=1`.
+
 ## Local setup (Worker)
 
 1. Install dependencies:

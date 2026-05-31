@@ -1,4 +1,4 @@
-import type { CurriculumRow, ProblemRecord } from "./types";
+import type { CurriculumRow, ProblemRecord } from "./types.js";
 
 interface ClassicContent {
   title: string;

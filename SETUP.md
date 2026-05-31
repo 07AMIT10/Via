@@ -6,7 +6,7 @@ This guide covers complete setup for local development and cloud deployment of t
 - Cloudflare D1/KV/Queues
 - Telegram bot and Mini App
 - React Mini App frontend
-- Ingest pipeline (classic + Exercism + Groq enrichment)
+- Ingest pipeline (JSON content validate/emit; legacy classic + Exercism + Groq behind `INGEST_LEGACY=1`)
 - Judge0 runtime (OCI VM or fallback VPS)
 
 ## 1) Prerequisites
@@ -108,7 +108,9 @@ Prepare env for enrichment (optional):
 export GROQ_API_KEY=<your_key>
 ```
 
-Run ingest:
+Author problems under `content/problems/<slug>.json` (see `content/schema/`). Day 1 uses `contains-duplicate.json`.
+
+Run ingest (default: validate JSON + emit SQL):
 
 ```bash
 cd ingest
@@ -116,7 +118,9 @@ npm run build
 node dist/index.js
 ```
 
-This writes `ingest/seed.sql`.
+For the legacy classics/Exercism/Groq path: `INGEST_LEGACY=1 node dist/index.js`.
+
+This writes `ingest/seed.sql` with a `content_json` column per problem.
 
 Apply seed:
 

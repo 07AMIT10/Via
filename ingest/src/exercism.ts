@@ -3,7 +3,7 @@ import { constants } from "node:fs";
 import { resolve } from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import type { CurriculumRow, ProblemRecord } from "./types";
+import type { CurriculumRow, ProblemRecord } from "./types.js";
 
 const execFileAsync = promisify(execFile);
 
