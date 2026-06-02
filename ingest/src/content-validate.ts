@@ -30,7 +30,10 @@ function slugFromRow(row: CurriculumRow): string {
 export async function loadAllProblems(repoRoot: string): Promise<ProblemContent[]> {
   const dir = resolve(repoRoot, "content", "problems");
   const files = (await readdir(dir)).filter(
-    (f) => f.endsWith(".json") && f !== "curriculum.json",
+    (f) =>
+      f.endsWith(".json") &&
+      f !== "curriculum.json" &&
+      !f.startsWith("_"),
   );
   const docs: ProblemContent[] = [];
 

@@ -67,6 +67,8 @@ Week 4 prep started:
 
 Problems live as versioned JSON under `content/problems/<slug>.json`. The Zod schema is in `content/schema/`.
 
+Copy `content/problems/_template.json` to `content/problems/<slug>.json`, replace all `[REPLACE]` fields, set `meta.day` to a positive integer, and add a matching row in `curriculum.json`. Files starting with `_` are ignored by ingest.
+
 1. Add or edit a problem JSON file.
 2. Validate and emit seed SQL:
    ```bash

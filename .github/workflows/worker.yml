@@ -4,10 +4,12 @@ on:
   push:
     paths:
       - "worker/**"
+      - "content/schema/**"
       - ".github/workflows/worker.yml"
   pull_request:
     paths:
       - "worker/**"
+      - "content/schema/**"
       - ".github/workflows/worker.yml"
 
 jobs:
@@ -21,5 +23,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Build content schema package
+        run: npm install && npm run build
+        working-directory: content/schema
       - run: npm install
       - run: npm run test

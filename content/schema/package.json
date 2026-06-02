@@ -5,8 +5,16 @@
   "type": "module",
   "main": "./dist/problem.v1.js",
   "types": "./dist/problem.v1.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/problem.v1.d.ts",
+      "import": "./dist/problem.v1.js",
+      "default": "./dist/problem.v1.js"
+    }
+  },
   "scripts": {
-    "build": "tsc -p tsconfig.json"
+    "build": "tsc -p tsconfig.json",
+    "prepare": "npm run build"
   },
   "dependencies": {
     "zod": "^3.23.8"
