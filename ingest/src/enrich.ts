@@ -1,4 +1,4 @@
-import type { ProblemRecord } from "./types";
+import type { ProblemRecord } from "./types.js";
 
 interface EnrichmentResult {
   key_insight: string;

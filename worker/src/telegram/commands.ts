@@ -1,6 +1,9 @@
 import type { Env } from "../env";
 import { sendMessage } from "./send";
-import { digestKeyboard, renderDigest } from "./digest";
+import { parseProblemContent } from "../content/parse.js";
+import { projectDigest } from "../content/projections.js";
+import { renderDigest } from "./digest";
+import { digestKeyboard } from "./keyboards.js";
 import {
   getProblemByDay,
   getProgressCounts,
@@ -52,22 +55,39 @@ export async function handleCommand(
           await sendMessage(env, chatId, "No problem found for today. Run ingestion and try again.");
           return;
         }
-        const digest = renderDigest({
-          day: problem.day_number,
-          pattern: problem.pattern,
-          difficulty: problem.difficulty,
-          title: problem.title,
-          description: problem.description,
-          keyInsight: problem.key_insight ?? "Identify the invariant that lets you avoid repeated work.",
-          whyItMatters: problem.why_it_matters ?? "This pattern appears frequently in interviews and real systems.",
-          applications: JSON.parse(problem.applications_json ?? "[]"),
-          variations: (JSON.parse(problem.variations_json ?? "[]") as Array<{ title: string; one_liner: string }>).map((v) => ({
-            title: v.title,
-            oneLiner: v.one_liner,
-          })),
-          complexity: problem.complexity ?? "Aim for linear or near-linear complexity.",
-        });
-        await sendMessage(env, chatId, digest, digestKeyboard(problem.id, env.PAGES_URL));
+        const doc = parseProblemContent(problem.content_json);
+        const digest = doc
+          ? projectDigest(doc).html
+          : renderDigest({
+              day: problem.day_number,
+              pattern: problem.pattern,
+              difficulty: problem.difficulty,
+              title: problem.title,
+              description: problem.description,
+              keyInsight:
+                problem.key_insight ??
+                "Identify the invariant that lets you avoid repeated work.",
+              whyItMatters:
+                problem.why_it_matters ??
+                "This pattern appears frequently in interviews and real systems.",
+              applications: JSON.parse(problem.applications_json ?? "[]"),
+              variations: (
+                JSON.parse(problem.variations_json ?? "[]") as Array<{
+                  title: string;
+                  one_liner: string;
+                }>
+              ).map((v) => ({
+                title: v.title,
+                oneLiner: v.one_liner,
+              })),
+              complexity: problem.complexity ?? "Aim for linear or near-linear complexity.",
+            });
+        await sendMessage(
+          env,
+          chatId,
+          digest,
+          digestKeyboard(problem.id, doc?.slug ?? problem.slug, env.PAGES_URL, Boolean(doc)),
+        );
       }
       return;
     case "/progress":

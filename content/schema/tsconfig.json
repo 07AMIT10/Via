@@ -4,9 +4,10 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "strict": true,
+    "declaration": true,
     "outDir": "dist",
-    "types": ["node"],
+    "rootDir": ".",
     "skipLibCheck": true
   },
-  "include": ["src"]
+  "include": ["problem.v1.ts"]
 }

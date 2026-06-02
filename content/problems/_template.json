@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "slug": "my-problem-slug",
+  "canonicalApproachId": "optimal",
+  "license": "self-written",
+  "source": {
+    "name": "original",
+    "url": "https://example.local/problems/my-problem-slug"
+  },
+  "meta": {
+    "title": "[REPLACE] Problem title",
+    "topic": "[REPLACE] topic (e.g. arrays)",
+    "pattern": "[REPLACE] pattern (e.g. hashing)",
+    "difficulty": "easy",
+    "day": 0
+  },
+  "statement": {
+    "description": "[REPLACE] One-paragraph problem statement.",
+    "constraints": ["[REPLACE] constraint 1"],
+    "examples": [
+      {
+        "input": "[REPLACE] example input",
+        "output": "[REPLACE] example output",
+        "explanation": "[REPLACE] why this output is correct"
+      }
+    ]
+  },
+  "learning": {
+    "keyInsight": "[REPLACE] The single idea that unlocks the problem.",
+    "whyItMatters": "[REPLACE] Where this shows up in interviews or production.",
+    "lore": "[OPTIONAL] Short historical or systems context.",
+    "productionFit": {
+      "title": "[OPTIONAL] Real-world scenario title",
+      "explanation": "[OPTIONAL] How teams use this pattern in production."
+    },
+    "scaleUp": {
+      "scenario": "[OPTIONAL] What breaks at scale?",
+      "solution": "[OPTIONAL] Sharding, streaming, external stores, etc."
+    }
+  },
+  "applications": [
+    "[REPLACE] Application 1 (systems / interviews)",
+    "[REPLACE] Application 2"
+  ],
+  "hints": [
+    "[REPLACE] Hint 1 — nudge without giving away the approach",
+    "[REPLACE] Hint 2",
+    "[REPLACE] Hint 3"
+  ],
+  "approaches": [
+    {
+      "id": "brute_force",
+      "label": "[REPLACE] Brute force label",
+      "summary": "[REPLACE] One-line summary.",
+      "intuition": "[REPLACE] Why this works, in plain language.",
+      "algorithm_steps": [
+        "[REPLACE] Step 1",
+        "[REPLACE] Step 2"
+      ],
+      "complexity": {
+        "time": { "notation": "O(n^2)" },
+        "space": { "notation": "O(1)" }
+      },
+      "implementations": {
+        "python": "class Solution:\n    def solve(self):\n        pass",
+        "go": "func solve() {}",
+        "rust": "impl Solution {\n    pub fn solve() {}\n}"
+      }
+    },
+    {
+      "id": "optimal",
+      "label": "[REPLACE] Optimal approach label",
+      "summary": "[REPLACE] One-line summary of the best approach.",
+      "intuition": "[REPLACE] Core invariant or insight.",
+      "algorithm_steps": [
+        "[REPLACE] Step 1",
+        "[REPLACE] Step 2"
+      ],
+      "complexity": {
+        "time": { "notation": "O(n)" },
+        "space": { "notation": "O(n)" }
+      },
+      "implementations": {
+        "python": "class Solution:\n    def solve(self):\n        pass",
+        "go": "func solve() {}",
+        "rust": "impl Solution {\n    pub fn solve() {}\n}"
+      },
+      "dry_run": {
+        "input": "[REPLACE] small example input",
+        "steps": [
+          "[REPLACE] trace step 1",
+          "[REPLACE] trace step 2"
+        ]
+      },
+      "visuals": {
+        "ascii_frames": [
+          "[OPTIONAL] Single ASCII diagram for Telegram"
+        ]
+      }
+    }
+  ],
+  "variations": [
+    {
+      "slug": "related-problem-slug",
+      "title": "[REPLACE] Variation title",
+      "oneLiner": "[REPLACE] How it differs from the base problem."
+    }
+  ],
+  "related": {
+    "samePattern": [],
+    "sameTopic": []
+  },
+  "conceptualQuiz": {
+    "question": "[REPLACE] Multiple-choice question?",
+    "options": ["[REPLACE] Correct idea", "[REPLACE] Distractor"],
+    "correctOptionIndex": 0,
+    "explanation": "[REPLACE] Why the answer is correct."
+  },
+  "debuggingChallenge": {
+    "language": "python",
+    "buggyCode": "def buggy():\n    pass",
+    "bugLocation": "[REPLACE] What is wrong and where?",
+    "fix": "[REPLACE] Short explanation of the fix."
+  },
+  "testCases": {
+    "python": [{ "stdin": "", "expected_stdout": "" }],
+    "go": [{ "stdin": "", "expected_stdout": "" }],
+    "rust": [{ "stdin": "", "expected_stdout": "" }]
+  },
+  "telegram": {
+    "digest": { "maxApplications": 3, "maxVariations": 2 },
+    "gating": { "solutionAfter": "attempted_or_hints>=2" }
+  }
+}

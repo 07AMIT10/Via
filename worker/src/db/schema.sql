@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS problems (
   test_cases_json TEXT NOT NULL,
   license TEXT NOT NULL DEFAULT 'MIT',
   source_url TEXT NOT NULL,
+  content_json TEXT,
   created_at INTEGER NOT NULL DEFAULT (unixepoch())
 );
 CREATE INDEX IF NOT EXISTS idx_problems_day ON problems(day_number);
@@ -48,6 +49,7 @@ CREATE TABLE IF NOT EXISTS user_progress (
   attempts INTEGER NOT NULL DEFAULT 0,
   hints_used INTEGER NOT NULL DEFAULT 0,
   approach_shown INTEGER NOT NULL DEFAULT 0,
+  approach_index INTEGER NOT NULL DEFAULT 0,
   recap_sent_at INTEGER,
   last_attempt INTEGER NOT NULL DEFAULT (unixepoch()),
   PRIMARY KEY (telegram_id, problem_id)

@@ -2,6 +2,7 @@ import type { Env } from "../env";
 
 export interface ProblemRow {
   id: number;
+  slug: string;
   day_number: number;
   title: string;
   description: string;
@@ -15,7 +16,12 @@ export interface ProblemRow {
   hints_json: string | null;
   canonical_approach: string | null;
   canonical_solutions_json: string | null;
+  content_json: string | null;
 }
+
+const PROBLEM_SELECT = `SELECT id, slug, day_number, title, description, pattern, difficulty, key_insight,
+            why_it_matters, applications_json, variations_json, complexity, hints_json,
+            canonical_approach, canonical_solutions_json, content_json`;
 
 export interface SubmitPayload {
   telegramId: number;
@@ -40,9 +46,7 @@ export async function getProblemByDay(
   day: number,
 ): Promise<ProblemRow | null> {
   const result = await env.DB.prepare(
-    `SELECT id, day_number, title, description, pattern, difficulty, key_insight,
-            why_it_matters, applications_json, variations_json, complexity, hints_json,
-            canonical_approach, canonical_solutions_json
+    `${PROBLEM_SELECT}
      FROM problems
      WHERE day_number = ?1
      LIMIT 1`,
@@ -153,14 +157,28 @@ export async function getProblemById(
   problemId: number,
 ): Promise<ProblemRow | null> {
   const result = await env.DB.prepare(
-    `SELECT id, day_number, title, description, pattern, difficulty, key_insight,
-            why_it_matters, applications_json, variations_json, complexity, hints_json,
-            canonical_approach, canonical_solutions_json
+    `${PROBLEM_SELECT}
      FROM problems
      WHERE id = ?1
      LIMIT 1`,
   )
     .bind(problemId)
+    .first<ProblemRow>();
+
+  return result ?? null;
+}
+
+export async function getProblemBySlug(
+  env: Env,
+  slug: string,
+): Promise<ProblemRow | null> {
+  const result = await env.DB.prepare(
+    `${PROBLEM_SELECT}
+     FROM problems
+     WHERE slug = ?1
+     LIMIT 1`,
+  )
+    .bind(slug)
     .first<ProblemRow>();
 
   return result ?? null;

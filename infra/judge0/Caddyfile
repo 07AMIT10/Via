@@ -1,0 +1,6 @@
+:80 {
+  encode gzip
+
+  @api path /submissions* /languages* /statuses*
+  reverse_proxy @api judge0:2358
+}

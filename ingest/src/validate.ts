@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { ProblemRecord } from "./types";
+import type { ProblemRecord } from "./types.js";
 
 const problemSchema = z.object({
   id: z.number().int().positive(),
