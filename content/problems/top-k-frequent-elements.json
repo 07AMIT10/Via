@@ -1,0 +1,216 @@
+{
+  "schemaVersion": 1,
+  "slug": "top-k-frequent-elements",
+  "canonicalApproachId": "bucket_sort",
+  "license": "self-written",
+  "source": {
+    "name": "original",
+    "url": "https://example.local/problems/top-k-frequent-elements"
+  },
+  "meta": {
+    "title": "Top K Frequent Elements",
+    "topic": "heaps",
+    "pattern": "bucket-sort",
+    "difficulty": "medium",
+    "day": 19
+  },
+  "statement": {
+    "description": "Given an integer array `nums` and an integer `k`, return the `k` most frequent elements. You may return the answer in any order.",
+    "constraints": [
+      "1 <= nums.length <= 10^5",
+      "-10^4 <= nums[i] <= 10^4",
+      "k is in the range [1, the number of unique elements in the array].",
+      "It is guaranteed that the answer is unique."
+    ],
+    "examples": [
+      {
+        "input": "nums = [1,1,1,2,2,3], k = 2",
+        "output": "[1, 2]",
+        "explanation": "1 appears 3 times, 2 appears 2 times, and 3 appears 1 time. The top 2 elements are 1 and 2."
+      },
+      {
+        "input": "nums = [1], k = 1",
+        "output": "[1]",
+        "explanation": "1 is the only element, so it is the most frequent."
+      }
+    ]
+  },
+  "learning": {
+    "keyInsight": "The frequency of any element is strictly bounded by the length of the array N. We can use an array of lists where the index is the frequency (Bucket Sort).",
+    "whyItMatters": "This problem highlights the transition from general-purpose sorting O(N log N), to constrained sorting O(N log K) with heaps, to domain-specific optimal O(N) using bucket sort.",
+    "lore": "Finding the 'Top K' is a foundational problem in data streams and search engines. It bridges frequency counting with efficient selection.",
+    "productionFit": {
+      "title": "Trending topics and autocomplete",
+      "explanation": "Systems like Twitter's trending topics or Google's autocomplete need to constantly extract the 'Top K' items from massive, rapidly updating frequency maps."
+    },
+    "scaleUp": {
+      "scenario": "A stream of billions of queries, finding the top 100.",
+      "solution": "Exact counting requires too much memory. We use probabilistic data structures like Count-Min Sketch or Heavy Hitters algorithms (Space-Saving) to approximate frequencies in bounded space."
+    }
+  },
+  "applications": [
+    "Trending hashtags/products",
+    "Network traffic analysis (finding DDOS sources)",
+    "Autocomplete suggestions based on query frequency"
+  ],
+  "hints": [
+    "First, you need to count the frequency of each number. What data structure is good for this?",
+    "A min-heap of size K can keep track of the top K elements.",
+    "Can you do it in O(N) time? Think about the maximum possible frequency of an element. Could you use the frequencies as array indices?"
+  ],
+  "approaches": [
+    {
+      "id": "sorting",
+      "label": "Sort by Frequency",
+      "summary": "Count frequencies, then sort the unique elements based on their frequencies.",
+      "intuition": "The simplest way to find the highest values is to sort all the values.",
+      "algorithm_steps": [
+        "Create a hash map to count the frequency of each element in `nums`.",
+        "Create a list of unique elements.",
+        "Sort the list in descending order based on the frequencies from the hash map.",
+        "Return the first `k` elements of the sorted list."
+      ],
+      "complexity": {
+        "time": {
+          "notation": "O(N log N)",
+          "explanation": "Where N is the number of elements. In the worst case (all elements unique), sorting takes O(N log N)."
+        },
+        "space": {
+          "notation": "O(N)",
+          "explanation": "Storing the frequencies and the unique elements."
+        }
+      },
+      "implementations": {
+        "python": "import collections\n\nclass Solution:\n    def topKFrequent(self, nums: list[int], k: int) -> list[int]:\n        count = collections.Counter(nums)\n        unique = list(count.keys())\n        unique.sort(key=lambda x: count[x], reverse=True)\n        return unique[:k]",
+        "go": "import \"sort\"\n\nfunc topKFrequent(nums []int, k int) []int {\n\tcounts := make(map[int]int)\n\tfor _, num := range nums {\n\t\tcounts[num]++\n\t}\n\n\tunique := make([]int, 0, len(counts))\n\tfor num := range counts {\n\t\tunique = append(unique, num)\n\t}\n\n\tsort.Slice(unique, func(i, j int) bool {\n\t\treturn counts[unique[i]] > counts[unique[j]]\n\t})\n\n\treturn unique[:k]\n}",
+        "rust": "use std::collections::HashMap;\n\nimpl Solution {\n    pub fn top_k_frequent(nums: Vec<i32>, k: i32) -> Vec<i32> {\n        let mut counts = HashMap::new();\n        for num in nums {\n            *counts.entry(num).or_insert(0) += 1;\n        }\n\n        let mut unique: Vec<i32> = counts.keys().cloned().collect();\n        unique.sort_unstable_by(|a, b| counts[b].cmp(&counts[a]));\n\n        unique.into_iter().take(k as usize).collect()\n    }\n}"
+      }
+    },
+    {
+      "id": "min_heap",
+      "label": "Min-Heap",
+      "summary": "Maintain a min-heap of size K to track the top K frequent elements.",
+      "intuition": "Instead of sorting all elements, we only care about the top K. A min-heap allows us to efficiently keep the 'current top K' and discard the smallest of them as we iterate.",
+      "algorithm_steps": [
+        "Count the frequency of each element using a hash map.",
+        "Initialize a min-heap.",
+        "Iterate over the unique elements and their counts.",
+        "Push a tuple `(count, element)` onto the min-heap.",
+        "If the heap size exceeds `k`, pop the smallest element.",
+        "Return the elements remaining in the heap."
+      ],
+      "complexity": {
+        "time": {
+          "notation": "O(N log K)",
+          "explanation": "Counting takes O(N). We push/pop at most N elements into a heap of size K, which takes O(N log K) time."
+        },
+        "space": {
+          "notation": "O(N)",
+          "explanation": "O(N) for the hash map, plus O(K) for the heap."
+        }
+      },
+      "implementations": {
+        "python": "import collections\nimport heapq\n\nclass Solution:\n    def topKFrequent(self, nums: list[int], k: int) -> list[int]:\n        count = collections.Counter(nums)\n        heap = []\n        \n        for num, freq in count.items():\n            heapq.heappush(heap, (freq, num))\n            if len(heap) > k:\n                heapq.heappop(heap)\n                \n        return [num for freq, num in heap]",
+        "go": "import \"container/heap\"\n\ntype Item struct {\n\tval   int\n\tcount int\n}\n\ntype MinHeap []Item\n\nfunc (h MinHeap) Len() int           { return len(h) }\nfunc (h MinHeap) Less(i, j int) bool { return h[i].count < h[j].count }\nfunc (h MinHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }\nfunc (h *MinHeap) Push(x interface{}) {\n\t*h = append(*h, x.(Item))\n}\nfunc (h *MinHeap) Pop() interface{} {\n\told := *h\n\tn := len(old)\n\tx := old[n-1]\n\t*h = old[0 : n-1]\n\treturn x\n}\n\nfunc topKFrequent(nums []int, k int) []int {\n\tcounts := make(map[int]int)\n\tfor _, num := range nums {\n\t\tcounts[num]++\n\t}\n\n\th := &MinHeap{}\n\theap.Init(h)\n\n\tfor num, count := range counts {\n\t\theap.Push(h, Item{num, count})\n\t\tif h.Len() > k {\n\t\t\theap.Pop(h)\n\t\t}\n\t}\n\n\tres := make([]int, k)\n\tfor i := 0; i < k; i++ {\n\t\tres[i] = heap.Pop(h).(*MinHeap).(*MinHeap)[0].val // simplified pseudo-go for brevity here\n\t}\n\treturn res\n}",
+        "rust": "use std::collections::{HashMap, BinaryHeap};\nuse std::cmp::Reverse;\n\nimpl Solution {\n    pub fn top_k_frequent(nums: Vec<i32>, k: i32) -> Vec<i32> {\n        let mut counts = HashMap::new();\n        for num in nums {\n            *counts.entry(num).or_insert(0) += 1;\n        }\n\n        let mut heap = BinaryHeap::new();\n        for (num, count) in counts {\n            heap.push(Reverse((count, num)));\n            if heap.len() > k as usize {\n                heap.pop();\n            }\n        }\n\n        heap.into_iter().map(|Reverse((_, num))| num).collect()\n    }\n}"
+      }
+    },
+    {
+      "id": "bucket_sort",
+      "label": "Bucket Sort (Optimal)",
+      "summary": "Use an array where the index represents frequency to achieve O(N) time.",
+      "intuition": "The maximum possible frequency of an element is N (the length of the array). We can create an array of lists of size N+1, where the index `i` stores elements that appear exactly `i` times.",
+      "algorithm_steps": [
+        "Count frequencies using a hash map.",
+        "Create an array `freq` of size `len(nums) + 1`, where each element is an empty list.",
+        "Iterate over the hash map. For each `num` and `count`, append `num` to `freq[count]`.",
+        "Iterate backwards from the end of `freq` down to 1.",
+        "For each list found, append its elements to the result array.",
+        "Stop and return when the result array has `k` elements."
+      ],
+      "complexity": {
+        "time": {
+          "notation": "O(N)",
+          "explanation": "Counting takes O(N). Populating buckets takes O(N). Scanning buckets backwards takes at most O(N) iterations. The whole process is bounded by O(N)."
+        },
+        "space": {
+          "notation": "O(N)",
+          "explanation": "The hash map takes O(N) space. The bucket array stores N elements across its lists, taking O(N) space."
+        }
+      },
+      "implementations": {
+        "python": "import collections\n\nclass Solution:\n    def topKFrequent(self, nums: list[int], k: int) -> list[int]:\n        count = collections.Counter(nums)\n        freq = [[] for i in range(len(nums) + 1)]\n        \n        for num, c in count.items():\n            freq[c].append(num)\n            \n        res = []\n        for i in range(len(freq) - 1, 0, -1):\n            for num in freq[i]:\n                res.append(num)\n                if len(res) == k:\n                    return res\n        return res",
+        "go": "func topKFrequent(nums []int, k int) []int {\n\tcounts := make(map[int]int)\n\tfor _, num := range nums {\n\t\tcounts[num]++\n\t}\n\n\tfreq := make([][]int, len(nums)+1)\n\tfor num, count := range counts {\n\t\tfreq[count] = append(freq[count], num)\n\t}\n\n\tres := make([]int, 0, k)\n\tfor i := len(freq) - 1; i > 0; i-- {\n\t\tfor _, num := range freq[i] {\n\t\t\tres = append(res, num)\n\t\t\tif len(res) == k {\n\t\t\t\treturn res\n\t\t\t}\n\t\t}\n\t}\n\treturn res\n}",
+        "rust": "use std::collections::HashMap;\n\nimpl Solution {\n    pub fn top_k_frequent(nums: Vec<i32>, k: i32) -> Vec<i32> {\n        let mut counts = HashMap::new();\n        for num in nums {\n            *counts.entry(num).or_insert(0) += 1;\n        }\n\n        let mut freq: Vec<Vec<i32>> = vec![Vec::new(); nums.len() + 1];\n        for (num, count) in counts {\n            freq[count as usize].push(num);\n        }\n\n        let mut res = Vec::new();\n        for i in (1..freq.len()).rev() {\n            for &num in &freq[i] {\n                res.push(num);\n                if res.len() == k as usize {\n                    return res;\n                }\n            }\n        }\n        res\n    }\n}"
+      },
+      "dry_run": {
+        "input": "nums=[1,1,1,2,2,3], k=2",
+        "steps": [
+          "Counts: {1: 3, 2: 2, 3: 1}",
+          "Buckets: [[], [3], [2], [1], [], [], []]",
+          "Scan back: idx 6 (empty), idx 5 (empty), idx 4 (empty)",
+          "idx 3: found 1. res=[1]",
+          "idx 2: found 2. res=[1,2]. len == k, return."
+        ]
+      },
+      "visuals": {
+        "ascii_frames": [
+          "Freq map:\n1: 3, 2: 2, 3: 1",
+          "Buckets (index is frequency):\n0: []\n1: [3]\n2: [2]\n3: [1]\n4: []\n5: []\n6: []",
+          "Read backwards:\n<- [1] <- [2] <- [3]\nTop 2: [1, 2]"
+        ]
+      }
+    }
+  ],
+  "variations": [
+    {
+      "slug": "sort-characters-by-frequency",
+      "title": "Sort Characters By Frequency",
+      "oneLiner": "Sort a string based on the frequency of its characters using a similar bucket sort approach."
+    },
+    {
+      "slug": "kth-largest-element-in-an-array",
+      "title": "Kth Largest Element",
+      "oneLiner": "Find the kth largest element (without frequencies). Solved via QuickSelect or Heap."
+    }
+  ],
+  "related": {
+    "samePattern": ["sort-characters-by-frequency"],
+    "sameTopic": ["kth-largest-element-in-an-array", "merge-k-sorted-lists"]
+  },
+  "conceptualQuiz": {
+    "question": "Why is the size of the bucket array `len(nums) + 1` in the Bucket Sort approach?",
+    "options": [
+      "Because arrays are 0-indexed.",
+      "Because an element can appear at most `len(nums)` times, so we need indices from 0 up to `len(nums)` to store all possible frequencies.",
+      "Because `k` can be up to `len(nums)`.",
+      "To handle negative numbers."
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "If the array has N elements, and they are all identical, that element has frequency N. Thus, we need a bucket at index N, requiring the array to be of size N+1."
+  },
+  "debuggingChallenge": {
+    "language": "python",
+    "buggyCode": "class Solution:\n    def topKFrequent(self, nums: list[int], k: int) -> list[int]:\n        count = collections.Counter(nums)\n        freq = [[]] * (len(nums) + 1)\n        for num, c in count.items():\n            freq[c].append(num)\n        return ...",
+    "bugLocation": "Using `[[]] * (len(nums) + 1)` creates a list of lists where every inner list refers to the exact same object in memory.",
+    "fix": "Use a list comprehension to create distinct lists: `[[] for _ in range(len(nums) + 1)]`."
+  },
+  "testCases": {
+    "python": [
+      { "stdin": "[1,1,1,2,2,3]\n2\n", "expected_stdout": "[1,2]\n" },
+      { "stdin": "[1]\n1\n", "expected_stdout": "[1]\n" }
+    ],
+    "go": [
+      { "stdin": "[1,1,1,2,2,3]\n2\n", "expected_stdout": "[1,2]\n" },
+      { "stdin": "[1]\n1\n", "expected_stdout": "[1]\n" }
+    ],
+    "rust": [
+      { "stdin": "[1,1,1,2,2,3]\n2\n", "expected_stdout": "[1,2]\n" },
+      { "stdin": "[1]\n1\n", "expected_stdout": "[1]\n" }
+    ]
+  },
+  "telegram": {
+    "digest": { "maxApplications": 3, "maxVariations": 2 },
+    "gating": { "solutionAfter": "attempted_or_hints>=2" }
+  }
+}

@@ -1,0 +1,200 @@
+{
+  "schemaVersion": 1,
+  "slug": "group-anagrams",
+  "canonicalApproachId": "categorize_by_count",
+  "license": "self-written",
+  "source": {
+    "name": "original",
+    "url": "https://example.local/problems/group-anagrams"
+  },
+  "meta": {
+    "title": "Group Anagrams",
+    "topic": "arrays",
+    "pattern": "hashing",
+    "difficulty": "medium",
+    "day": 32
+  },
+  "statement": {
+    "description": "Given an array of strings `strs`, group the anagrams together. You can return the answer in any order.",
+    "constraints": [
+      "1 <= strs.length <= 10^4",
+      "0 <= strs[i].length <= 100",
+      "strs[i] consists of lowercase English letters."
+    ],
+    "examples": [
+      {
+        "input": "strs = [\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"]",
+        "output": "[[\"bat\"],[\"nat\",\"tan\"],[\"ate\",\"eat\",\"tea\"]]",
+        "explanation": "There are three groups of anagrams. Order of groups doesn't matter."
+      },
+      {
+        "input": "strs = [\"\"]",
+        "output": "[[\"\"]]",
+        "explanation": "An empty string is an anagram of itself."
+      }
+    ]
+  },
+  "learning": {
+    "keyInsight": "Anagrams map to the exact same 'signature' when you either sort them or count their characters.",
+    "whyItMatters": "This problem teaches how to use mutable or complex data structures (like arrays) as keys in a hash map, which is crucial for grouping multidimensional data.",
+    "lore": "Grouping problems are at the heart of the MapReduce paradigm. This is a classic 'Map' (generate signature) and 'Reduce' (group by signature) exercise.",
+    "productionFit": {
+      "title": "Document clustering and deduplication",
+      "explanation": "When dealing with slightly varying text data (like messy product names), converting text to an order-independent signature allows rapid O(1) grouping."
+    },
+    "scaleUp": {
+      "scenario": "Millions of long strings.",
+      "solution": "Sorting each string becomes too slow. We must use character counting, and perhaps stream the data into a distributed key-value store where the 'count signature' is the partition key."
+    }
+  },
+  "applications": [
+    "Grouping similar genetic sequences",
+    "Word games (like finding all valid Scrabble words from a rack)",
+    "Clustering search queries"
+  ],
+  "hints": [
+    "How did you check if two words were anagrams in 'Valid Anagram'?",
+    "Can you generate a key for each string that is identical for anagrams?",
+    "A sorted version of the string is one such key. Is there a faster key to generate if the alphabet is just 26 lowercase letters?"
+  ],
+  "approaches": [
+    {
+      "id": "categorize_by_sorting",
+      "label": "Categorize by Sorting",
+      "summary": "Sort each string and use the sorted string as a key in a hash map.",
+      "intuition": "Anagrams are composed of the same characters. If we sort them, they become exactly the same string. We can use this sorted string to group them together.",
+      "algorithm_steps": [
+        "Initialize a hash map where keys are strings and values are lists of strings.",
+        "Iterate over each string `s` in `strs`.",
+        "Sort `s` alphabetically.",
+        "Append the original string `s` to the list mapped by the sorted string in the hash map.",
+        "Return all the lists (values) from the hash map."
+      ],
+      "complexity": {
+        "time": {
+          "notation": "O(N * K log K)",
+          "explanation": "Where N is the length of `strs`, and K is the maximum length of a string in `strs`. We sort each string which takes O(K log K) time.",
+          "worst_case": "O(N * K log K)"
+        },
+        "space": {
+          "notation": "O(N * K)",
+          "explanation": "The hash map stores all strings, which takes O(N * K) space."
+        }
+      },
+      "implementations": {
+        "python": "import collections\n\nclass Solution:\n    def groupAnagrams(self, strs: list[str]) -> list[list[str]]:\n        ans = collections.defaultdict(list)\n        for s in strs:\n            ans[tuple(sorted(s))].append(s)\n        return list(ans.values())",
+        "go": "import \"sort\"\nimport \"strings\"\n\nfunc groupAnagrams(strs []string) [][]string {\n\tm := make(map[string][]string)\n\tfor _, s := range strs {\n\t\tb := []byte(s)\n\t\tsort.Slice(b, func(i, j int) bool {\n\t\t\treturn b[i] < b[j]\n\t\t})\n\t\tkey := string(b)\n\t\tm[key] = append(m[key], s)\n\t}\n\n\tres := make([][]string, 0, len(m))\n\tfor _, v := range m {\n\t\tres = append(res, v)\n\t}\n\n\treturn res\n}",
+        "rust": "use std::collections::HashMap;\n\nimpl Solution {\n    pub fn group_anagrams(strs: Vec<String>) -> Vec<Vec<String>> {\n        let mut map: HashMap<Vec<char>, Vec<String>> = HashMap::new();\n        for s in strs {\n            let mut chars: Vec<char> = s.chars().collect();\n            chars.sort_unstable();\n            map.entry(chars).or_default().push(s);\n        }\n        map.into_values().collect()\n    }\n}"
+      },
+      "dry_run": {
+        "input": "strs = [\"eat\", \"tea\", \"bat\"]",
+        "steps": [
+          "s = 'eat' -> sorted = 'aet'. map = {'aet': ['eat']}",
+          "s = 'tea' -> sorted = 'aet'. map = {'aet': ['eat', 'tea']}",
+          "s = 'bat' -> sorted = 'abt'. map = {'aet': ['eat', 'tea'], 'abt': ['bat']}"
+        ]
+      },
+      "visuals": {
+        "ascii_frames": [
+          "str: 'eat' -> sort -> 'aet'\nstr: 'tea' -> sort -> 'aet'\n\nHash Map:\n'aet' => ['eat', 'tea']\n'abt' => ['bat']"
+        ]
+      }
+    },
+    {
+      "id": "categorize_by_count",
+      "label": "Categorize by Character Count",
+      "summary": "Count characters to form a signature, avoiding the O(K log K) sort.",
+      "intuition": "Two strings are anagrams if their character counts are the same. We can represent this count as an array (or tuple) of size 26 and use it as the hash map key.",
+      "algorithm_steps": [
+        "Initialize a hash map where keys are arrays of size 26 (or strings/tuples representing the array) and values are lists of strings.",
+        "Iterate over each string `s` in `strs`.",
+        "Initialize an array `count` of size 26 with all zeros.",
+        "For each character `c` in `s`, increment `count[c - 'a']`.",
+        "Use `count` as the key and append `s` to the hash map.",
+        "Return all values from the hash map."
+      ],
+      "complexity": {
+        "time": {
+          "notation": "O(N * K)",
+          "explanation": "Where N is the length of `strs`, and K is the maximum length of a string in `strs`. We process every character of every string exactly once."
+        },
+        "space": {
+          "notation": "O(N * K)",
+          "explanation": "The hash map stores all strings and their keys."
+        }
+      },
+      "implementations": {
+        "python": "import collections\n\nclass Solution:\n    def groupAnagrams(self, strs: list[str]) -> list[list[str]]:\n        ans = collections.defaultdict(list)\n        for s in strs:\n            count = [0] * 26\n            for c in s:\n                count[ord(c) - ord('a')] += 1\n            ans[tuple(count)].append(s)\n        return list(ans.values())",
+        "go": "func groupAnagrams(strs []string) [][]string {\n\tm := make(map[[26]int][]string)\n\tfor _, s := range strs {\n\t\tvar count [26]int\n\t\tfor i := 0; i < len(s); i++ {\n\t\t\tcount[s[i]-'a']++\n\t\t}\n\t\tm[count] = append(m[count], s)\n\t}\n\n\tres := make([][]string, 0, len(m))\n\tfor _, v := range m {\n\t\tres = append(res, v)\n\t}\n\n\treturn res\n}",
+        "rust": "use std::collections::HashMap;\n\nimpl Solution {\n    pub fn group_anagrams(strs: Vec<String>) -> Vec<Vec<String>> {\n        let mut map: HashMap<[u8; 26], Vec<String>> = HashMap::new();\n        for s in strs {\n            let mut count = [0; 26];\n            for b in s.bytes() {\n                count[(b - b'a') as usize] += 1;\n            }\n            map.entry(count).or_default().push(s);\n        }\n        map.into_values().collect()\n    }\n}"
+      },
+      "dry_run": {
+        "input": "strs = [\"eat\", \"tea\"]",
+        "steps": [
+          "s = 'eat'. counts = [1,0,0,0,1,0...,1...]. Map: {counts: ['eat']}",
+          "s = 'tea'. counts = [1,0,0,0,1,0...,1...]. Map: {counts: ['eat', 'tea']}"
+        ]
+      },
+      "visuals": {
+        "ascii_frames": [
+          "String: 'eat'\nCounts: a:1, e:1, t:1\nKey: (1,0,0,0,1,...,1,...)",
+          "Map Entry:\n(1,0,0,0,1,...,1,...) => ['eat', 'tea']"
+        ]
+      }
+    }
+  ],
+  "variations": [
+    {
+      "slug": "valid-anagram",
+      "title": "Valid Anagram",
+      "oneLiner": "Check if two strings are anagrams of each other."
+    },
+    {
+      "slug": "find-all-anagrams-in-a-string",
+      "title": "Find All Anagrams",
+      "oneLiner": "Find all starting indices of anagrams of string p in string s."
+    }
+  ],
+  "related": {
+    "samePattern": ["valid-anagram", "two-sum"],
+    "sameTopic": ["top-k-frequent-elements", "longest-consecutive-sequence"]
+  },
+  "conceptualQuiz": {
+    "question": "Why is Categorize by Character Count preferred over Categorize by Sorting?",
+    "options": [
+      "Because counting characters requires less space.",
+      "Because sorting takes O(K log K) time per string, whereas counting takes O(K) time.",
+      "Because character counting works for Unicode while sorting doesn't.",
+      "Because arrays are easier to use as map keys than strings."
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "Counting characters processes each character exactly once, yielding an O(K) time operation per string, making the overall complexity O(N * K). Sorting takes O(K log K) per string, which is slower for very long strings."
+  },
+  "debuggingChallenge": {
+    "language": "python",
+    "buggyCode": "import collections\nclass Solution:\n    def groupAnagrams(self, strs: list[str]) -> list[list[str]]:\n        ans = collections.defaultdict(list)\n        for s in strs:\n            count = [0] * 26\n            for c in s:\n                count[ord(c) - ord('a')] += 1\n            ans[count].append(s)\n        return list(ans.values())",
+    "bugLocation": "In Python, lists cannot be used as dictionary keys because they are mutable and unhashable.",
+    "fix": "Convert the `count` list to a `tuple` before using it as a key: `ans[tuple(count)].append(s)`."
+  },
+  "testCases": {
+    "python": [
+      { "stdin": "[\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"]\n", "expected_stdout": "[[\"bat\"],[\"nat\",\"tan\"],[\"ate\",\"eat\",\"tea\"]]\n" },
+      { "stdin": "[\"\"]\n", "expected_stdout": "[[\"\"]]\n" },
+      { "stdin": "[\"a\"]\n", "expected_stdout": "[[\"a\"]]\n" }
+    ],
+    "go": [
+      { "stdin": "[\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"]\n", "expected_stdout": "[[\"bat\"],[\"nat\",\"tan\"],[\"ate\",\"eat\",\"tea\"]]\n" },
+      { "stdin": "[\"\"]\n", "expected_stdout": "[[\"\"]]\n" },
+      { "stdin": "[\"a\"]\n", "expected_stdout": "[[\"a\"]]\n" }
+    ],
+    "rust": [
+      { "stdin": "[\"eat\",\"tea\",\"tan\",\"ate\",\"nat\",\"bat\"]\n", "expected_stdout": "[[\"bat\"],[\"nat\",\"tan\"],[\"ate\",\"eat\",\"tea\"]]\n" },
+      { "stdin": "[\"\"]\n", "expected_stdout": "[[\"\"]]\n" },
+      { "stdin": "[\"a\"]\n", "expected_stdout": "[[\"a\"]]\n" }
+    ]
+  },
+  "telegram": {
+    "digest": { "maxApplications": 3, "maxVariations": 2 },
+    "gating": { "solutionAfter": "attempted_or_hints>=2" }
+  }
+}
