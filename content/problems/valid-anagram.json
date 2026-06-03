@@ -1,0 +1,248 @@
+{
+  "schemaVersion": 1,
+  "slug": "valid-anagram",
+  "canonicalApproachId": "hash_map",
+  "license": "self-written",
+  "source": {
+    "name": "original",
+    "url": "https://example.local/problems/valid-anagram"
+  },
+  "meta": {
+    "title": "Valid Anagram",
+    "topic": "strings",
+    "pattern": "hashing",
+    "difficulty": "easy",
+    "day": 5
+  },
+  "statement": {
+    "description": "Given two strings `s` and `t`, return `true` if `t` is an anagram of `s`, and `false` otherwise. An Anagram is a word or phrase formed by rearranging the letters of a different word or phrase, typically using all the original letters exactly once.",
+    "constraints": [
+      "1 <= s.length, t.length <= 5 * 10^4",
+      "s and t consist of lowercase English letters."
+    ],
+    "examples": [
+      {
+        "input": "s = \"anagram\", t = \"nagaram\"",
+        "output": "true",
+        "explanation": "Both strings contain the same characters with the same frequencies: 'a' 3 times, 'n' 1 time, 'g' 1 time, 'r' 1 time, 'm' 1 time."
+      },
+      {
+        "input": "s = \"rat\", t = \"car\"",
+        "output": "false",
+        "explanation": "The string 't' does not have a 't' and 's' does not have a 'c'."
+      }
+    ]
+  },
+  "learning": {
+    "keyInsight": "Anagrams must have exactly the same counts of each character.",
+    "whyItMatters": "Frequency counting is a core technique for histogram-like aggregations, often used in NLP and feature extraction.",
+    "lore": "Anagrams have been used since antiquity for cryptography and wordplay. In algorithms, checking for anagrams introduces frequency maps.",
+    "productionFit": {
+      "title": "Signature generation for similarity",
+      "explanation": "If we want to group millions of strings by their anagrams (e.g., matching scrambled names), we calculate their character frequency array and use it as a signature or hash key."
+    },
+    "scaleUp": {
+      "scenario": "Strings are huge and distributed across chunks",
+      "solution": "We can distribute counting (MapReduce), aggregate the counts, and then compare the final histograms."
+    }
+  },
+  "applications": [
+    "Grouping similar records or words",
+    "Text processing and NLP preprocessing",
+    "Cryptanalysis (letter frequency)"
+  ],
+  "hints": [
+    "What defines an anagram? The lengths must be equal.",
+    "Think about how many times each character appears.",
+    "Can you use an array of size 26 instead of a hash map to save space overhead?"
+  ],
+  "approaches": [
+    {
+      "id": "sorting",
+      "label": "Sort both strings",
+      "summary": "Sort both strings alphabetically; if they are anagrams, the sorted strings will be identical.",
+      "intuition": "Sorting imposes a deterministic order. Any two anagrams, regardless of original character order, will map to the exact same sorted string.",
+      "algorithm_steps": [
+        "Check if lengths are equal. If not, return false.",
+        "Sort string s.",
+        "Sort string t.",
+        "Compare the sorted strings. Return true if equal, false otherwise."
+      ],
+      "complexity": {
+        "time": {
+          "notation": "O(n log n)",
+          "explanation": "Dominated by the string sorting operation.",
+          "best_case": "O(1) if lengths differ",
+          "worst_case": "O(n log n)"
+        },
+        "space": {
+          "notation": "O(n) or O(1)",
+          "explanation": "Depends on the language. In languages where strings are immutable (like Python or Go), sorting requires making an O(n) copy."
+        }
+      },
+      "implementations": {
+        "python": "class Solution:\n    def isAnagram(self, s: str, t: str) -> bool:\n        if len(s) != len(t):\n            return False\n        return sorted(s) == sorted(t)",
+        "go": "import \"sort\"\nimport \"strings\"\n\nfunc isAnagram(s string, t string) bool {\n\tif len(s) != len(t) {\n\t\treturn false\n\t}\n\tsChars := strings.Split(s, \"\")\n\ttChars := strings.Split(t, \"\")\n\tsort.Strings(sChars)\n\tsort.Strings(tChars)\n\treturn strings.Join(sChars, \"\") == strings.Join(tChars, \"\")\n}",
+        "rust": "impl Solution {\n    pub fn is_anagram(s: String, t: String) -> bool {\n        if s.len() != t.len() {\n            return false;\n        }\n        let mut s_chars: Vec<char> = s.chars().collect();\n        let mut t_chars: Vec<char> = t.chars().collect();\n        s_chars.sort_unstable();\n        t_chars.sort_unstable();\n        s_chars == t_chars\n    }\n}"
+      },
+      "dry_run": {
+        "input": "s = \"rat\", t = \"car\"",
+        "steps": [
+          "Check lengths: len('rat') == 3, len('car') == 3. Equal.",
+          "Sort s: 'a', 'r', 't' -> 'art'",
+          "Sort t: 'a', 'c', 'r' -> 'acr'",
+          "Compare 'art' == 'acr' -> false"
+        ]
+      },
+      "visuals": {
+        "ascii_frames": [
+          "s: [ r, a, t ] --> sort --> [ a, r, t ]",
+          "t: [ c, a, r ] --> sort --> [ a, c, r ]",
+          "Match?  [a,r,t] != [a,c,r] => false"
+        ]
+      }
+    },
+    {
+      "id": "hash_map",
+      "label": "Frequency Array (Hash Map)",
+      "summary": "Count character frequencies in one string and decrement based on the other.",
+      "intuition": "Since the alphabet is limited (26 lowercase letters), we can use a fixed-size array to keep a running tally of character counts.",
+      "algorithm_steps": [
+        "Check if lengths are equal. If not, return false.",
+        "Create an array of size 26, initialized to 0.",
+        "Iterate through the characters of s and t simultaneously.",
+        "For each character in s, increment its corresponding index in the array.",
+        "For each character in t, decrement its corresponding index in the array.",
+        "Check if all elements in the array are 0. If any is non-zero, return false."
+      ],
+      "complexity": {
+        "time": {
+          "notation": "O(n)",
+          "explanation": "We iterate over the strings once, then iterate over the fixed size 26 array."
+        },
+        "space": {
+          "notation": "O(1)",
+          "explanation": "The array size is bounded to 26, which is constant."
+        }
+      },
+      "implementations": {
+        "python": "class Solution:\n    def isAnagram(self, s: str, t: str) -> bool:\n        if len(s) != len(t):\n            return False\n        \n        counts = [0] * 26\n        for i in range(len(s)):\n            counts[ord(s[i]) - ord('a')] += 1\n            counts[ord(t[i]) - ord('a')] -= 1\n            \n        for count in counts:\n            if count != 0:\n                return False\n        return True",
+        "go": "func isAnagram(s string, t string) bool {\n\tif len(s) != len(t) {\n\t\treturn false\n\t}\n\n\tcounts := make([]int, 26)\n\tfor i := 0; i < len(s); i++ {\n\t\tcounts[s[i]-'a']++\n\t\tcounts[t[i]-'a']--\n\t}\n\n\tfor _, count := range counts {\n\t\tif count != 0 {\n\t\t\treturn false\n\t\t}\n\t}\n\treturn true\n}",
+        "rust": "impl Solution {\n    pub fn is_anagram(s: String, t: String) -> bool {\n        if s.len() != t.len() {\n            return false;\n        }\n        \n        let mut counts = [0; 26];\n        let s_bytes = s.as_bytes();\n        let t_bytes = t.as_bytes();\n        \n        for i in 0..s.len() {\n            counts[(s_bytes[i] - b'a') as usize] += 1;\n            counts[(t_bytes[i] - b'a') as usize] -= 1;\n        }\n        \n        counts.iter().all(|&c| c == 0)\n    }\n}"
+      },
+      "dry_run": {
+        "input": "s = \"aba\", t = \"baa\"",
+        "steps": [
+          "Counts array: [0, 0, ..., 0]",
+          "i=0: s='a' (+1 to index 0), t='b' (-1 to index 1). Array: [1, -1, 0, ...]",
+          "i=1: s='b' (+1 to index 1), t='a' (-1 to index 0). Array: [0, 0, 0, ...]",
+          "i=2: s='a' (+1 to index 0), t='a' (-1 to index 0). Array: [0, 0, 0, ...]",
+          "All zero? Yes, return true."
+        ]
+      },
+      "visuals": {
+        "ascii_frames": [
+          "s='aba', t='baa'",
+          "    a  b  c ...",
+          "c: [0, 0, 0, ...]",
+          "1. +a -b -> c: [1, -1, 0, ...]",
+          "2. +b -a -> c: [0, 0, 0, ...]",
+          "3. +a -a -> c: [0, 0, 0, ...]",
+          "End array is all zeroes -> True!"
+        ]
+      }
+    }
+  ],
+  "variations": [
+    {
+      "slug": "find-all-anagrams-in-a-string",
+      "title": "Find All Anagrams in a String",
+      "oneLiner": "Use a sliding window with a frequency array to find all anagrams of a pattern."
+    },
+    {
+      "slug": "group-anagrams",
+      "title": "Group Anagrams",
+      "oneLiner": "Group multiple strings into lists of anagrams."
+    }
+  ],
+  "related": {
+    "samePattern": [
+      "contains-duplicate",
+      "group-anagrams"
+    ],
+    "sameTopic": [
+      "longest-palindrome",
+      "isomorphic-strings"
+    ]
+  },
+  "conceptualQuiz": {
+    "question": "Why is the space complexity of the frequency array approach O(1)?",
+    "options": [
+      "Because we only need one array.",
+      "Because the array size is fixed (e.g., 26 for lowercase English letters) regardless of the input length.",
+      "Because string characters don't take up space.",
+      "Because it runs in linear time."
+    ],
+    "correctOptionIndex": 1,
+    "explanation": "Space complexity measures how the required memory scales with the input size. Since the size of the array is always 26 regardless of whether the string has 10 characters or 10 million, the space used does not grow with n, making it O(1)."
+  },
+  "debuggingChallenge": {
+    "language": "python",
+    "buggyCode": "class Solution:\n    def isAnagram(self, s: str, t: str) -> bool:\n        for char in s:\n            if char not in t:\n                return False\n        return True",
+    "bugLocation": "This code only checks if characters in `s` exist in `t`, but doesn't check their counts. It also ignores the length of strings and extra characters in `t`.",
+    "fix": "Use a frequency map or sort the strings to compare counts."
+  },
+  "testCases": {
+    "python": [
+      {
+        "stdin": "\"anagram\"\n\"nagaram\"\n",
+        "expected_stdout": "true\n"
+      },
+      {
+        "stdin": "\"rat\"\n\"car\"\n",
+        "expected_stdout": "false\n"
+      },
+      {
+        "stdin": "\"a\"\n\"ab\"\n",
+        "expected_stdout": "false\n"
+      }
+    ],
+    "go": [
+      {
+        "stdin": "\"anagram\"\n\"nagaram\"\n",
+        "expected_stdout": "true\n"
+      },
+      {
+        "stdin": "\"rat\"\n\"car\"\n",
+        "expected_stdout": "false\n"
+      },
+      {
+        "stdin": "\"a\"\n\"ab\"\n",
+        "expected_stdout": "false\n"
+      }
+    ],
+    "rust": [
+      {
+        "stdin": "\"anagram\"\n\"nagaram\"\n",
+        "expected_stdout": "true\n"
+      },
+      {
+        "stdin": "\"rat\"\n\"car\"\n",
+        "expected_stdout": "false\n"
+      },
+      {
+        "stdin": "\"a\"\n\"ab\"\n",
+        "expected_stdout": "false\n"
+      }
+    ]
+  },
+  "telegram": {
+    "digest": {
+      "maxApplications": 3,
+      "maxVariations": 2
+    },
+    "gating": {
+      "solutionAfter": "attempted_or_hints>=2"
+    }
+  }
+}

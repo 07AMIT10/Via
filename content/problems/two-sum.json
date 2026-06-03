@@ -1,0 +1,230 @@
+{
+  "schemaVersion": 1,
+  "slug": "two-sum",
+  "canonicalApproachId": "one_pass_hash_map",
+  "license": "self-written",
+  "source": {
+    "name": "original",
+    "url": "https://example.local/problems/two-sum"
+  },
+  "meta": {
+    "title": "Two Sum",
+    "topic": "arrays",
+    "pattern": "hashing",
+    "difficulty": "easy",
+    "day": 31
+  },
+  "statement": {
+    "description": "Given an array of integers `nums` and an integer `target`, return indices of the two numbers such that they add up to `target`. You may assume that each input would have exactly one solution, and you may not use the same element twice. You can return the answer in any order.",
+    "constraints": [
+      "2 <= nums.length <= 10^4",
+      "-10^9 <= nums[i] <= 10^9",
+      "-10^9 <= target <= 10^9",
+      "Only one valid answer exists."
+    ],
+    "examples": [
+      {
+        "input": "nums = [2, 7, 11, 15], target = 9",
+        "output": "[0, 1]",
+        "explanation": "Because nums[0] + nums[1] == 9, we return [0, 1]."
+      },
+      {
+        "input": "nums = [3, 2, 4], target = 6",
+        "output": "[1, 2]",
+        "explanation": "nums[1] + nums[2] == 6, so we return [1, 2]."
+      }
+    ]
+  },
+  "learning": {
+    "keyInsight": "Instead of looking for a pair that adds to the target, iterate through the array and look for the *complement* (target - current_number) in a hash map.",
+    "whyItMatters": "This transforms an O(N^2) brute force search into an O(N) lookup. It's the quintessential example of trading space for time, a core concept in software engineering.",
+    "lore": "Two Sum is famously the first problem on LeetCode and the 'Hello World' of algorithmic interviews. It perfectly demonstrates the power of Hash Maps.",
+    "productionFit": {
+      "title": "Fast lookups in relational data",
+      "explanation": "In databases, when joining two tables, instead of a nested loop join (O(N*M)), we can build a hash index on one table to achieve a Hash Join (O(N+M))."
+    },
+    "scaleUp": {
+      "scenario": "The array is larger than memory (e.g., Terabytes).",
+      "solution": "We could use a MapReduce approach or external sorting, but if the data is distributed, we can partition the array across nodes based on the hash of the numbers."
+    }
+  },
+  "applications": [
+    "Hash joins in databases",
+    "Finding pairs matching specific criteria in distributed logs",
+    "Financial reconciliation (matching credits and debits)"
+  ],
+  "hints": [
+    "A brute force approach would be to check every combination of two numbers. What is the time complexity of that?",
+    "If we fix one of the numbers, say 'x', we have to scan the entire array to find the next number 'y' which is value 'target - x'.",
+    "Can we change our array into another data structure that gives us a faster look up time for 'y'?"
+  ],
+  "approaches": [
+    {
+      "id": "brute_force",
+      "label": "Nested Loops (Brute Force)",
+      "summary": "Check every possible pair of elements in the array to see if they sum to the target.",
+      "intuition": "Try all combinations. If we are currently at element x, we check all subsequent elements to see if any equal target - x.",
+      "algorithm_steps": [
+        "Iterate i from 0 to len(nums) - 1.",
+        "Iterate j from i + 1 to len(nums).",
+        "If nums[i] + nums[j] == target, return [i, j]."
+      ],
+      "complexity": {
+        "time": {
+          "notation": "O(n^2)",
+          "explanation": "For each of the n elements, we loop through the remaining elements.",
+          "best_case": "O(1) if first two elements are the answer",
+          "worst_case": "O(n^2)"
+        },
+        "space": {
+          "notation": "O(1)",
+          "explanation": "We only use a few variables for iteration."
+        }
+      },
+      "implementations": {
+        "python": "class Solution:\n    def twoSum(self, nums: list[int], target: int) -> list[int]:\n        for i in range(len(nums)):\n            for j in range(i + 1, len(nums)):\n                if nums[i] + nums[j] == target:\n                    return [i, j]\n        return []",
+        "go": "func twoSum(nums []int, target int) []int {\n\tfor i := 0; i < len(nums); i++ {\n\t\tfor j := i + 1; j < len(nums); j++ {\n\t\t\tif nums[i]+nums[j] == target {\n\t\t\t\treturn []int{i, j}\n\t\t\t}\n\t\t}\n\t}\n\treturn nil\n}",
+        "rust": "impl Solution {\n    pub fn two_sum(nums: Vec<i32>, target: i32) -> Vec<i32> {\n        for i in 0..nums.len() {\n            for j in (i + 1)..nums.len() {\n                if nums[i] + nums[j] == target {\n                    return vec![i as i32, j as i32];\n                }\n            }\n        }\n        vec![]\n    }\n}"
+      },
+      "dry_run": {
+        "input": "nums=[3,2,4], target=6",
+        "steps": [
+          "i=0 (3): check j=1 (2). Sum=5. No.",
+          "i=0 (3): check j=2 (4). Sum=7. No.",
+          "i=1 (2): check j=2 (4). Sum=6. YES! Return [1, 2]"
+        ]
+      },
+      "visuals": {
+        "ascii_frames": [
+          "[ 3, 2, 4 ]  Target: 6\n  ^\n  i  j (3+2=5)",
+          "[ 3, 2, 4 ]\n  ^     ^\n  i     j (3+4=7)",
+          "[ 3, 2, 4 ]\n     ^  ^\n     i  j (2+4=6) Match!"
+        ]
+      }
+    },
+    {
+      "id": "two_pass_hash_map",
+      "label": "Two-Pass Hash Map",
+      "summary": "Build a hash map of values to indices, then iterate again to find the complement.",
+      "intuition": "We can reduce the O(N) inner loop of the brute force to O(1) by using a hash map.",
+      "algorithm_steps": [
+        "Iterate over nums and add each element's value and its index to a hash map.",
+        "Iterate over nums again.",
+        "For each element, calculate complement = target - nums[i].",
+        "Check if complement exists in the map and its index is not i.",
+        "If so, return [i, map[complement]]."
+      ],
+      "complexity": {
+        "time": {
+          "notation": "O(n)",
+          "explanation": "We traverse the list containing n elements twice."
+        },
+        "space": {
+          "notation": "O(n)",
+          "explanation": "The extra space required depends on the number of items stored in the hash table."
+        }
+      },
+      "implementations": {
+        "python": "class Solution:\n    def twoSum(self, nums: list[int], target: int) -> list[int]:\n        hashmap = {}\n        for i in range(len(nums)):\n            hashmap[nums[i]] = i\n            \n        for i in range(len(nums)):\n            complement = target - nums[i]\n            if complement in hashmap and hashmap[complement] != i:\n                return [i, hashmap[complement]]\n        return []",
+        "go": "func twoSum(nums []int, target int) []int {\n\thashmap := make(map[int]int)\n\tfor i, num := range nums {\n\t\thashmap[num] = i\n\t}\n\tfor i, num := range nums {\n\t\tcomplement := target - num\n\t\tif j, ok := hashmap[complement]; ok && j != i {\n\t\t\treturn []int{i, j}\n\t\t}\n\t}\n\treturn nil\n}",
+        "rust": "use std::collections::HashMap;\n\nimpl Solution {\n    pub fn two_sum(nums: Vec<i32>, target: i32) -> Vec<i32> {\n        let mut map = HashMap::new();\n        for (i, &num) in nums.iter().enumerate() {\n            map.insert(num, i);\n        }\n        for (i, &num) in nums.iter().enumerate() {\n            let complement = target - num;\n            if let Some(&j) = map.get(&complement) {\n                if i != j {\n                    return vec![i as i32, j as i32];\n                }\n            }\n        }\n        vec![]\n    }\n}"
+      }
+    },
+    {
+      "id": "one_pass_hash_map",
+      "label": "One-Pass Hash Map (Optimal)",
+      "summary": "Check for the complement in the map as you iterate and build it.",
+      "intuition": "While we iterate and insert elements into the map, we can look back to see if current element's complement already exists in the map.",
+      "algorithm_steps": [
+        "Create an empty hash map.",
+        "Iterate over nums.",
+        "For each element, calculate complement = target - nums[i].",
+        "If complement exists in the map, return [map[complement], i].",
+        "Otherwise, add nums[i] to the map with its index i."
+      ],
+      "complexity": {
+        "time": {
+          "notation": "O(n)",
+          "explanation": "We traverse the list containing n elements exactly once. Each lookup in the table costs only O(1) time."
+        },
+        "space": {
+          "notation": "O(n)",
+          "explanation": "We store at most n elements in the hash map."
+        }
+      },
+      "implementations": {
+        "python": "class Solution:\n    def twoSum(self, nums: list[int], target: int) -> list[int]:\n        hashmap = {}\n        for i, num in enumerate(nums):\n            complement = target - num\n            if complement in hashmap:\n                return [hashmap[complement], i]\n            hashmap[num] = i\n        return []",
+        "go": "func twoSum(nums []int, target int) []int {\n\thashmap := make(map[int]int)\n\tfor i, num := range nums {\n\t\tcomplement := target - num\n\t\tif j, ok := hashmap[complement]; ok {\n\t\t\treturn []int{j, i}\n\t\t}\n\t\thashmap[num] = i\n\t}\n\treturn nil\n}",
+        "rust": "use std::collections::HashMap;\n\nimpl Solution {\n    pub fn two_sum(nums: Vec<i32>, target: i32) -> Vec<i32> {\n        let mut map = HashMap::new();\n        for (i, &num) in nums.iter().enumerate() {\n            let complement = target - num;\n            if let Some(&j) = map.get(&complement) {\n                return vec![j as i32, i as i32];\n            }\n            map.insert(num, i);\n        }\n        vec![]\n    }\n}"
+      },
+      "dry_run": {
+        "input": "nums=[2,7,11,15], target=9",
+        "steps": [
+          "map={}",
+          "i=0, num=2: comp=7. Not in map. add {2: 0}",
+          "i=1, num=7: comp=2. YES! in map at index 0. Return [0, 1]"
+        ]
+      },
+      "visuals": {
+        "ascii_frames": [
+          "Target: 9\n[ 2, 7, 11, 15 ]\n  ^\n  i=0, num=2, map={}\n  comp=7 not in map -> map={2:0}",
+          "\n[ 2, 7, 11, 15 ]\n     ^\n     i=1, num=7, map={2:0}\n     comp=2 IN map -> return [0, 1]"
+        ]
+      }
+    }
+  ],
+  "variations": [
+    {
+      "slug": "two-sum-ii-input-array-is-sorted",
+      "title": "Two Sum II",
+      "oneLiner": "Input array is sorted; use two pointers instead of a hash map to achieve O(1) space."
+    },
+    {
+      "slug": "3sum",
+      "title": "3Sum",
+      "oneLiner": "Find triplets that sum to 0. Usually solved by sorting and using two pointers."
+    }
+  ],
+  "related": {
+    "samePattern": ["valid-anagram", "contains-duplicate"],
+    "sameTopic": ["best-time-to-buy-and-sell-stock"]
+  },
+  "conceptualQuiz": {
+    "question": "Why is the One-Pass Hash Map preferred over the Two-Pass approach?",
+    "options": [
+      "Because it takes less space.",
+      "Because it does not require sorting the array.",
+      "Because it avoids iterating through the array twice, cutting the execution time in half in the worst case, and avoids matching an element with itself.",
+      "Because it handles negative numbers better."
+    ],
+    "correctOptionIndex": 2,
+    "explanation": "While both are O(N) time and space, the one-pass avoids a second loop and elegantly prevents the edge case of using the same element twice (because the current element isn't in the map yet when we check for its complement)."
+  },
+  "debuggingChallenge": {
+    "language": "python",
+    "buggyCode": "class Solution:\n    def twoSum(self, nums: list[int], target: int) -> list[int]:\n        hashmap = {v: i for i, v in enumerate(nums)}\n        for i, v in enumerate(nums):\n            comp = target - v\n            if comp in hashmap:\n                return [i, hashmap[comp]]\n        return []",
+    "bugLocation": "The dictionary comprehension overwrites duplicate values with their latest index. Also, it can pair a number with itself if `target = num * 2`.",
+    "fix": "Use the one-pass approach or explicitly check `hashmap[comp] != i`."
+  },
+  "testCases": {
+    "python": [
+      { "stdin": "[2,7,11,15]\n9\n", "expected_stdout": "[0,1]\n" },
+      { "stdin": "[3,2,4]\n6\n", "expected_stdout": "[1,2]\n" },
+      { "stdin": "[3,3]\n6\n", "expected_stdout": "[0,1]\n" }
+    ],
+    "go": [
+      { "stdin": "[2,7,11,15]\n9\n", "expected_stdout": "[0,1]\n" },
+      { "stdin": "[3,2,4]\n6\n", "expected_stdout": "[1,2]\n" },
+      { "stdin": "[3,3]\n6\n", "expected_stdout": "[0,1]\n" }
+    ],
+    "rust": [
+      { "stdin": "[2,7,11,15]\n9\n", "expected_stdout": "[0,1]\n" },
+      { "stdin": "[3,2,4]\n6\n", "expected_stdout": "[1,2]\n" },
+      { "stdin": "[3,3]\n6\n", "expected_stdout": "[0,1]\n" }
+    ]
+  },
+  "telegram": {
+    "digest": { "maxApplications": 3, "maxVariations": 2 },
+    "gating": { "solutionAfter": "attempted_or_hints>=2" }
+  }
+}

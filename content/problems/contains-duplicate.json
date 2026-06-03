@@ -39,12 +39,12 @@
     ]
   },
   "learning": {
-    "keyInsight": "Membership tests in a hash set turn duplicate detection from O(n²) scanning into a single O(1) lookup per element.",
-    "whyItMatters": "Set-based membership is one of the most reused primitives in backend engineering—dedup keys, idempotency checks, and join hash tables all share the same pattern.",
-    "lore": "Early hash-table papers (Knuth, Morris) formalized average O(1) lookup; modern language runtimes (Python dict, Go map, Rust HashSet) make this the default tool for 'have I seen this before?'",
+    "keyInsight": "Membership tests in a hash set turn duplicate detection from O(n\u00b2) scanning into a single O(1) lookup per element.",
+    "whyItMatters": "Set-based membership is one of the most reused primitives in backend engineering\u2014dedup keys, idempotency checks, and join hash tables all share the same pattern.",
+    "lore": "The problem of finding duplicates is a fundamental algorithm taught early in computer science, serving as a gateway to understanding time-space tradeoffs. The shift from O(n^2) nested loops to O(n) hash maps is a right of passage for software engineers.",
     "productionFit": {
-      "title": "Idempotent event ingestion",
-      "explanation": "Stream processors often keep a bounded set (or Bloom filter) of recently seen event IDs; a duplicate key triggers drop-or-merge logic instead of double-processing."
+      "title": "Idempotency and Deduplication at Scale",
+      "explanation": "In distributed systems, processing the same event twice can cause critical errors (like double-charging a customer). Systems often use distributed caches (like Redis) or Bloom filters to quickly check 'have I seen this ID before?'\u2014which is exactly the Contains Duplicate pattern scaled up."
     },
     "scaleUp": {
       "scenario": "Billions of keys across machines",
@@ -57,8 +57,8 @@
     "In-memory duplicate detection before batch writes prevents unique-constraint violations at the database"
   ],
   "hints": [
-    "Brute force compares every pair of indices—correct but slow for large n.",
-    "If you sort first, equal neighbors must be adjacent—what does that simplify?",
+    "Brute force compares every pair of indices\u2014correct but slow for large n.",
+    "If you sort first, equal neighbors must be adjacent\u2014what does that simplify?",
     "A hash set answers 'seen before?' in average O(1); walk the array once."
   ],
   "approaches": [
@@ -76,10 +76,10 @@
       ],
       "complexity": {
         "time": {
-          "notation": "O(n²)",
+          "notation": "O(n\u00b2)",
           "explanation": "Roughly n(n-1)/2 comparisons in the worst case.",
           "best_case": "O(1) when the first two elements match",
-          "worst_case": "O(n²) when all elements are distinct"
+          "worst_case": "O(n\u00b2) when all elements are distinct"
         },
         "space": {
           "notation": "O(1)",
@@ -90,6 +90,21 @@
         "python": "class Solution:\n    def containsDuplicate(self, nums: list[int]) -> bool:\n        n = len(nums)\n        for i in range(n - 1):\n            for j in range(i + 1, n):\n                if nums[i] == nums[j]:\n                    return True\n        return False",
         "go": "func containsDuplicate(nums []int) bool {\n\tfor i := 0; i < len(nums)-1; i++ {\n\t\tfor j := i + 1; j < len(nums); j++ {\n\t\t\tif nums[i] == nums[j] {\n\t\t\t\treturn true\n\t\t\t}\n\t\t}\n\t}\n\treturn false\n}",
         "rust": "impl Solution {\n    pub fn contains_duplicate(nums: Vec<i32>) -> bool {\n        for i in 0..nums.len() {\n            for j in (i + 1)..nums.len() {\n                if nums[i] == nums[j] {\n                    return true;\n                }\n            }\n        }\n        false\n    }\n}"
+      },
+      "dry_run": {
+        "input": "[1, 2, 3, 1]",
+        "steps": [
+          "i=0 (val=1): compare with j=1 (val=2) -> no match",
+          "i=0 (val=1): compare with j=2 (val=3) -> no match",
+          "i=0 (val=1): compare with j=3 (val=1) -> MATCH! Return true."
+        ]
+      },
+      "visuals": {
+        "ascii_frames": [
+          "Step 1:\n[1, 2, 3, 1]\n ^  ^\n i  j (No match)",
+          "Step 2:\n[1, 2, 3, 1]\n ^     ^\n i     j (No match)",
+          "Step 3:\n[1, 2, 3, 1]\n ^        ^\n i        j (Match found!)"
+        ]
       }
     },
     {
@@ -122,8 +137,28 @@
         "rust": "impl Solution {\n    pub fn contains_duplicate(mut nums: Vec<i32>) -> bool {\n        nums.sort_unstable();\n        nums.windows(2).any(|w| w[0] == w[1])\n    }\n}"
       },
       "trade_offs": {
-        "pros": ["No hash table overhead", "Simple to reason about"],
-        "cons": ["Mutates input if sorted in place", "O(n log n) slower than linear hash scan"]
+        "pros": [
+          "No hash table overhead",
+          "Simple to reason about"
+        ],
+        "cons": [
+          "Mutates input if sorted in place",
+          "O(n log n) slower than linear hash scan"
+        ]
+      },
+      "dry_run": {
+        "input": "[1, 2, 3, 1]",
+        "steps": [
+          "Sort array: [1, 1, 2, 3]",
+          "i=1: compare nums[1] (1) with nums[0] (1) -> MATCH! Return true."
+        ]
+      },
+      "visuals": {
+        "ascii_frames": [
+          "Before sort:\n[1, 2, 3, 1]",
+          "After sort:\n[1, 1, 2, 3]",
+          "Scan:\n[1, 1, 2, 3]\n ^  ^\n i-1 i (Match found!)"
+        ]
       }
     },
     {
@@ -159,20 +194,27 @@
       "dry_run": {
         "input": "[1, 2, 3, 1]",
         "steps": [
-          "x=1: not in seen → insert {1}",
-          "x=2: not in seen → insert {1,2}",
-          "x=3: not in seen → insert {1,2,3}",
-          "x=1: already in seen → return true"
+          "x=1: not in seen \u2192 insert {1}",
+          "x=2: not in seen \u2192 insert {1,2}",
+          "x=3: not in seen \u2192 insert {1,2,3}",
+          "x=1: already in seen \u2192 return true"
         ]
       },
       "trade_offs": {
-        "pros": ["Linear time", "Does not mutate input order", "Generalizes to streaming"],
-        "cons": ["O(n) extra memory", "Hash quality affects constants"]
+        "pros": [
+          "Linear time",
+          "Does not mutate input order",
+          "Generalizes to streaming"
+        ],
+        "cons": [
+          "O(n) extra memory",
+          "Hash quality affects constants"
+        ]
       },
       "visuals": {
         "ascii_frames": [
-          "Pass 1: nums=[1,2,3,1]   seen={}\n       x=1 → miss → seen={1}\n       x=2 → miss → seen={1,2}\n       x=3 → miss → seen={1,2,3}",
-          "Pass 2: x=1 → HIT in seen={1,2,3}\n       duplicate found → return true\n\n   idx:  0  1  2  3\n   val:  1  2  3  1\n              ↑────── collision at index 3"
+          "Pass 1: nums=[1,2,3,1]   seen={}\n       x=1 \u2192 miss \u2192 seen={1}\n       x=2 \u2192 miss \u2192 seen={1,2}\n       x=3 \u2192 miss \u2192 seen={1,2,3}",
+          "Pass 2: x=1 \u2192 HIT in seen={1,2,3}\n       duplicate found \u2192 return true\n\n   idx:  0  1  2  3\n   val:  1  2  3  1\n              \u2191\u2500\u2500\u2500\u2500\u2500\u2500 collision at index 3"
         ]
       }
     },
@@ -180,7 +222,7 @@
       "id": "hash_set_length",
       "label": "Set size vs array length",
       "summary": "Build a set of all elements; duplicates exist iff set size is smaller than array length.",
-      "intuition": "A set collapses duplicates automatically—if anything repeated, the set shrinks relative to n.",
+      "intuition": "A set collapses duplicates automatically\u2014if anything repeated, the set shrinks relative to n.",
       "algorithm_steps": [
         "Insert every element of nums into a hash set.",
         "Count distinct elements as set size.",
@@ -202,6 +244,22 @@
         "python": "class Solution:\n    def containsDuplicate(self, nums: list[int]) -> bool:\n        return len(set(nums)) < len(nums)",
         "go": "func containsDuplicate(nums []int) bool {\n\tseen := make(map[int]struct{})\n\tfor _, x := range nums {\n\t\tseen[x] = struct{}{}\n\t}\n\treturn len(seen) < len(nums)\n}",
         "rust": "use std::collections::HashSet;\n\nimpl Solution {\n    pub fn contains_duplicate(nums: Vec<i32>) -> bool {\n        let n = nums.len();\n        nums.into_iter().collect::<HashSet<_>>().len() < n\n    }\n}"
+      },
+      "dry_run": {
+        "input": "[1, 2, 3, 1]",
+        "steps": [
+          "Original array length: 4",
+          "Build set from array: {1, 2, 3}",
+          "Set length: 3",
+          "Compare: 3 < 4 -> True"
+        ]
+      },
+      "visuals": {
+        "ascii_frames": [
+          "Array: [1, 2, 3, 1]  (Length: 4)",
+          "Set:   {1, 2, 3}     (Length: 3)",
+          "3 != 4 => Duplicates exist!"
+        ]
       }
     }
   ],
@@ -218,8 +276,16 @@
     }
   ],
   "related": {
-    "samePattern": ["valid-anagram", "two-sum", "group-anagrams"],
-    "sameTopic": ["two-sum", "product-of-array-except-self", "maximum-subarray"]
+    "samePattern": [
+      "valid-anagram",
+      "two-sum",
+      "group-anagrams"
+    ],
+    "sameTopic": [
+      "two-sum",
+      "product-of-array-except-self",
+      "maximum-subarray"
+    ]
   },
   "conceptualQuiz": {
     "question": "Why does the hash-set approach achieve O(n) average time?",
@@ -230,26 +296,44 @@
       "Because we only store half the elements"
     ],
     "correctOptionIndex": 1,
-    "explanation": "Each of n elements triggers at most one average O(1) lookup and one O(1) insert, giving O(n) overall. Sorting would be O(n log n); brute force is O(n²)."
+    "explanation": "Each of n elements triggers at most one average O(1) lookup and one O(1) insert, giving O(n) overall. Sorting would be O(n log n); brute force is O(n\u00b2)."
   },
   "debuggingChallenge": {
     "language": "python",
     "buggyCode": "class Solution:\n    def containsDuplicate(self, nums: list[int]) -> bool:\n        seen = set()\n        for x in nums:\n            seen.add(x)\n        return len(seen) < len(nums)",
-    "bugLocation": "The loop always adds every element before checking length; logic is correct but early exit is missing—worse, this version never returns True early when duplicate appears mid-array (still correct answer but the bug is using add without checking membership first, missing the intended early-return pattern). More precisely: swapping add-only for 'if x in seen' loses early termination; for infinite streams it would be wrong.",
+    "bugLocation": "The loop always adds every element before checking length; logic is correct but early exit is missing\u2014worse, this version never returns True early when duplicate appears mid-array (still correct answer but the bug is using add without checking membership first, missing the intended early-return pattern). More precisely: swapping add-only for 'if x in seen' loses early termination; for infinite streams it would be wrong.",
     "fix": "Check membership before insert:\n\nfor x in nums:\n    if x in seen:\n        return True\n    seen.add(x)\nreturn False"
   },
   "testCases": {
     "python": [
-      { "stdin": "[1,2,3,1]\n", "expected_stdout": "true\n" },
-      { "stdin": "[1,2,3,4]\n", "expected_stdout": "false\n" }
+      {
+        "stdin": "[1,2,3,1]\n",
+        "expected_stdout": "true\n"
+      },
+      {
+        "stdin": "[1,2,3,4]\n",
+        "expected_stdout": "false\n"
+      }
     ],
     "go": [
-      { "stdin": "[1,2,3,1]\n", "expected_stdout": "true\n" },
-      { "stdin": "[1,2,3,4]\n", "expected_stdout": "false\n" }
+      {
+        "stdin": "[1,2,3,1]\n",
+        "expected_stdout": "true\n"
+      },
+      {
+        "stdin": "[1,2,3,4]\n",
+        "expected_stdout": "false\n"
+      }
     ],
     "rust": [
-      { "stdin": "[1,2,3,1]\n", "expected_stdout": "true\n" },
-      { "stdin": "[1,2,3,4]\n", "expected_stdout": "false\n" }
+      {
+        "stdin": "[1,2,3,1]\n",
+        "expected_stdout": "true\n"
+      },
+      {
+        "stdin": "[1,2,3,4]\n",
+        "expected_stdout": "false\n"
+      }
     ]
   },
   "telegram": {
