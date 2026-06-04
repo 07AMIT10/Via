@@ -70,17 +70,18 @@ Problems live as versioned JSON under `content/problems/<slug>.json`. The Zod sc
 Copy `content/problems/_template.json` to `content/problems/<slug>.json`, replace all `[REPLACE]` fields, set `meta.day` to a positive integer, and add a matching row in `curriculum.json`. Files starting with `_` are ignored by ingest.
 
 1. Add or edit a problem JSON file.
-2. Validate and emit seed SQL:
+2. Open a PR and merge to `main`.
+
+**Production publish (automatic):** On merge to `main`, the [Content publish](.github/workflows/content-publish.yml) workflow validates JSON, builds `ingest/seed.sql`, and runs `wrangler d1 execute` against remote D1. Add a GitHub repo secret `CLOUDFLARE_API_TOKEN` (Cloudflare API token with D1 edit access).
+
+**Manual / local (optional):**
    ```bash
    cd ingest && npm install && npm run build && node dist/index.js
+   cd ../worker
+   npx wrangler d1 execute dsa-bot --remote --file=../ingest/seed.sql --yes
    ```
-3. Apply D1 migration (once per environment) and seed:
-   ```bash
-   cd worker
-   npx wrangler d1 execute dsa-bot --remote --file=migrations/0002_content_json.sql
-   npx wrangler d1 execute dsa-bot --remote --file=../ingest/seed.sql
-   ```
-4. Deploy the worker: `npm run deploy`
+3. One-time D1 migration (per environment): `npx wrangler d1 execute dsa-bot --remote --file=migrations/0002_content_json.sql`
+4. Deploy the worker when **worker code** changes: `npm run deploy` (not required for JSON-only updates)
 
 Legacy ingest (classics / Exercism / Groq) remains available with `INGEST_LEGACY=1`.
 

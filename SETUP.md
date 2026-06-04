@@ -122,12 +122,14 @@ For the legacy classics/Exercism/Groq path: `INGEST_LEGACY=1 node dist/index.js`
 
 This writes `ingest/seed.sql` with a `content_json` column per problem.
 
-Apply seed:
+Apply seed (manual — production auto-runs on merge to `main`):
 
 ```bash
 cd ../worker
 wrangler d1 execute dsa-bot --file=../ingest/seed.sql --remote
 ```
+
+**GitHub Actions (required for auto-publish):** In the repo → Settings → Secrets → Actions, add `CLOUDFLARE_API_TOKEN` (Cloudflare API token with permission to edit D1 database `dsa-bot`). The [Content publish](.github/workflows/content-publish.yml) workflow runs when `content/problems/**` changes land on `main`.
 
 ## 7) Worker deploy
 
