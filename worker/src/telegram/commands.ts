@@ -1,16 +1,16 @@
 import type { Env } from "../env";
 import { sendMessage } from "./send";
-import { parseProblemContent } from "../content/parse.js";
-import { projectDigest } from "../content/projections.js";
-import { renderDigest } from "./digest";
-import { digestKeyboard } from "./keyboards.js";
 import {
-  getProblemByDay,
   getProgressCounts,
   getStreak,
   getSubscriberByTelegramId,
 } from "../db/repo";
 import { sendRecapForTelegramUser } from "../cron/recap";
+import {
+  sendBrowseMenu,
+  sendBrowseStep,
+  sendTodayProblem,
+} from "./browse.js";
 
 async function upsertSubscriber(
   env: Env,
@@ -43,52 +43,17 @@ export async function handleCommand(
       await sendMessage(
         env,
         chatId,
-        "<b>Welcome to DSA Daily</b>\nYou are subscribed. Use /today to fetch today's problem.",
+        "<b>Welcome to DSA Daily</b>\nUse /today for your curriculum day, /browse to pick any problem, or /next to move through the catalog. Buttons appear under each problem.",
       );
       return;
     case "/today":
-      {
-        const subscriber = await getSubscriberByTelegramId(env, telegramId);
-        const day = subscriber?.current_day ?? 1;
-        const problem = await getProblemByDay(env, day);
-        if (!problem) {
-          await sendMessage(env, chatId, "No problem found for today. Run ingestion and try again.");
-          return;
-        }
-        const doc = parseProblemContent(problem.content_json);
-        const digest = doc
-          ? projectDigest(doc).html
-          : renderDigest({
-              day: problem.day_number,
-              pattern: problem.pattern,
-              difficulty: problem.difficulty,
-              title: problem.title,
-              description: problem.description,
-              keyInsight:
-                problem.key_insight ??
-                "Identify the invariant that lets you avoid repeated work.",
-              whyItMatters:
-                problem.why_it_matters ??
-                "This pattern appears frequently in interviews and real systems.",
-              applications: JSON.parse(problem.applications_json ?? "[]"),
-              variations: (
-                JSON.parse(problem.variations_json ?? "[]") as Array<{
-                  title: string;
-                  one_liner: string;
-                }>
-              ).map((v) => ({
-                title: v.title,
-                oneLiner: v.one_liner,
-              })),
-              complexity: problem.complexity ?? "Aim for linear or near-linear complexity.",
-            });
-        await sendMessage(
-          env,
-          chatId,
-          digest,
-          digestKeyboard(problem.id, doc?.slug ?? problem.slug, env.PAGES_URL, Boolean(doc)),
-        );
-      }
+      await sendTodayProblem(env, chatId, telegramId);
+      return;
+    case "/next":
+      await sendBrowseStep(env, chatId, telegramId, "next");
+      return;
+    case "/browse":
+      await sendBrowseMenu(env, chatId);
       return;
     case "/progress":
       {
@@ -143,7 +108,7 @@ export async function handleCommand(
       await sendMessage(
         env,
         chatId,
-        "Unknown command. Try /start, /today, /progress, /pause, /resume, /recap, or /lang.",
+        "Unknown command. Try /start, /today, /next, /browse, /progress, /pause, /resume, /recap, or /lang.",
       );
   }
 }

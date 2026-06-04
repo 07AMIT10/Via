@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS subscribers (
   username TEXT,
   active INTEGER NOT NULL DEFAULT 1,
   current_day INTEGER NOT NULL DEFAULT 1,
+  browse_day INTEGER,
   tz_offset_min INTEGER NOT NULL DEFAULT 330,
   preferred_language TEXT CHECK (preferred_language IN ('python', 'go', 'rust')) DEFAULT 'python',
   created_at INTEGER NOT NULL DEFAULT (unixepoch())

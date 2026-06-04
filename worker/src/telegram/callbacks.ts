@@ -13,6 +13,12 @@ import {
 } from "../content/projections.js";
 import { parseProblemRef, resolveProblem } from "../db/problem-resolve.js";
 import { getPreferredLanguage } from "../db/repo";
+import {
+  sendBrowseMenu,
+  sendBrowseStep,
+  sendProblemBySlug,
+  sendTodayProblem,
+} from "./browse.js";
 import { answerCallbackQuery, sendMessage } from "./send";
 import {
   approachKeyboard,
@@ -23,11 +29,19 @@ import {
 function parseCallbackData(
   data: string,
 ): { action: string; key: string; payload?: string } | null {
-  const [action, key, ...rest] = data.split(":");
-  if (!action || !key) {
+  const parts = data.split(":");
+  const action = parts[0];
+  if (!action) {
     return null;
   }
-  return { action, key, payload: rest[0] };
+  if (parts.length === 1) {
+    return { action, key: "", payload: undefined };
+  }
+  const key = parts[1];
+  if (!key) {
+    return null;
+  }
+  return { action, key, payload: parts[2] };
 }
 
 async function recordApproachView(
@@ -88,6 +102,29 @@ export async function handleCallback(
   if (!parsed) {
     await answerCallbackQuery(env, callbackQueryId, "Unsupported action");
     return;
+  }
+
+  switch (parsed.action) {
+    case "bn":
+      await answerCallbackQuery(env, callbackQueryId, "Next problem");
+      await sendBrowseStep(env, chatId, telegramId, "next");
+      return;
+    case "bp":
+      await answerCallbackQuery(env, callbackQueryId, "Previous problem");
+      await sendBrowseStep(env, chatId, telegramId, "prev");
+      return;
+    case "bb":
+      await answerCallbackQuery(env, callbackQueryId, "Browse");
+      await sendBrowseMenu(env, chatId);
+      return;
+    case "bt":
+      await answerCallbackQuery(env, callbackQueryId, "Today");
+      await sendTodayProblem(env, chatId, telegramId);
+      return;
+    case "pv":
+      await answerCallbackQuery(env, callbackQueryId, "Opening problem");
+      await sendProblemBySlug(env, chatId, telegramId, parsed.key);
+      return;
   }
 
   const ref = parseProblemRef(parsed.key);

@@ -13,7 +13,7 @@ Implemented:
 
 - Worker scaffold (`worker/`)
 - Telegram webhook route with secret token validation
-- Basic commands: `/start`, `/today`, `/pause`, `/resume`
+- Basic commands: `/start`, `/today`, `/next`, `/browse`, `/pause`, `/resume` (inline buttons for prev/next/browse under each problem)
 - Initial D1 schema in `worker/src/db/schema.sql`
 - Basic tests in `worker/test/webhook.test.ts`
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { renderDigest } from "../src/telegram/digest";
-import { digestKeyboard } from "../src/telegram/keyboards";
+import { digestKeyboard, digestKeyboardWithNav } from "../src/telegram/keyboards";
 
 describe("digest helpers", () => {
   it("renders digest text with expected sections", () => {
@@ -29,5 +29,14 @@ describe("digest helpers", () => {
     expect(serialized).toContain("h:contains-duplicate:1");
     expect(serialized).toContain("ap:contains-duplicate:0");
     expect(serialized).toContain("s:contains-duplicate");
+  });
+
+  it("adds browse navigation buttons", () => {
+    const kb = digestKeyboardWithNav(1, "contains-duplicate", "https://dsa.pages.dev", true);
+    const serialized = JSON.stringify(kb);
+    expect(serialized).toContain('"bn"');
+    expect(serialized).toContain('"bp"');
+    expect(serialized).toContain('"bb"');
+    expect(serialized).toContain('"bt"');
   });
 });

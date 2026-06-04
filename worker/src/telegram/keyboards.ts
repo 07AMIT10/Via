@@ -1,3 +1,52 @@
+export function navKeyboardRow(): Array<{ text: string; callback_data: string }> {
+  return [
+    { text: "◀ Prev", callback_data: "bp" },
+    { text: "Next ▶", callback_data: "bn" },
+  ];
+}
+
+export function navMenuRow(): Array<{ text: string; callback_data: string }> {
+  return [
+    { text: "Browse all", callback_data: "bb" },
+    { text: "Today", callback_data: "bt" },
+  ];
+}
+
+export function digestKeyboardWithNav(
+  problemId: number,
+  slug: string | null,
+  pagesUrl: string,
+  rich: boolean,
+): Record<string, unknown> {
+  const base = digestKeyboard(problemId, slug, pagesUrl, rich);
+  const rows = [...(base.inline_keyboard as Array<Array<{ text: string; callback_data: string }>>)];
+  rows.push(navKeyboardRow());
+  rows.push(navMenuRow());
+  return { inline_keyboard: rows };
+}
+
+export function browseListKeyboard(
+  items: Array<{ slug: string; day_number: number; title: string }>,
+): Record<string, unknown> {
+  const rows: Array<Array<{ text: string; callback_data: string }>> = [];
+  for (let i = 0; i < items.length; i += 2) {
+    const pair = items.slice(i, i + 2).map((item) => ({
+      text: `Day ${item.day_number}: ${truncateTitle(item.title, 18)}`,
+      callback_data: `pv:${item.slug}`,
+    }));
+    rows.push(pair);
+  }
+  rows.push(navMenuRow());
+  return { inline_keyboard: rows };
+}
+
+function truncateTitle(title: string, max: number): string {
+  if (title.length <= max) {
+    return title;
+  }
+  return `${title.slice(0, max - 1)}…`;
+}
+
 export function digestKeyboard(
   problemId: number,
   slug: string | null,
